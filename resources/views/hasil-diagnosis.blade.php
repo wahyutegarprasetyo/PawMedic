@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hasil Diagnosis - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
-
+@php
+$diagnosis = session('diagnosis')?? [];
+@endphp
 <style>
 :root{
     --ff-heading: 'Poppins', system-ui, -apple-system, 'Segoe UI', Roboto, 'Helvetica Neue', Arial;
@@ -442,16 +444,13 @@ body::before{
         <div class="diagnosis-result">
             <div class="diagnosis-label">Kemungkinan Penyakit</div>
             <div class="diagnosis-name">
-    {{ session('hasil') ?? 'Tidak diketahui' }}
+            {{ $diagnosis['nama'] ?? 'Tidak diketahui' }}
 </div>
 
 <div class="diagnosis-category">
-    Jenis: {{ session('jenis') ?? '-' }}
+Jenis: {{ $diagnosis['kategori'] ?? '-' }}
 </div>
 
-<div style="margin-top:10px; font-weight:600; color:#4bb66f;">
-    Confidence: {{ session('confidence') }}%
-</div>
 
         <!-- Gejala yang Dipilih -->
         <div class="gejala-list-section">
@@ -471,7 +470,7 @@ body::before{
                 <span>💡 Rekomendasi Perawatan</span>
             </div>
             <ul class="recommendation-list">
-@foreach(session('pertolongan', []) as $item)
+            @foreach($diagnosis['pertolongan'] ?? [] as $item)
     <li>{{ $item }}</li>
 @endforeach
 </ul>
@@ -482,7 +481,7 @@ body::before{
         <span>🛡️ Pencegahan</span>
     </div>
     <ul class="recommendation-list">
-    @foreach(session('pencegahan', []) as $item)
+    @foreach($diagnosis['pencegahan'] ?? [] as $item)
         <li>{{ $item }}</li>
     @endforeach
     </ul>
@@ -528,7 +527,7 @@ function printDiagnosis() {
 
 // Share function
 function shareDiagnosis() {
-    const diagnosis = "{{ session('hasil') }}";
+    const diagnosis = "{{ $diagnosis['nama'] ?? '-' }}";
     const gejala = @json(session('gejala', []));
 
     const text = `Hasil Diagnosis PawMedic:\n\nPenyakit: ${diagnosis}\nGejala: ${gejala.join(', ')}\n\nDapatkan diagnosis di: ${window.location.origin}`;

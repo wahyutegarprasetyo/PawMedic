@@ -21,9 +21,7 @@ Route::get('/loading', function () {
 
 Route::post('/diagnosis/proses', [DiagnosisController::class, 'prosesDiagnosis'])->name('diagnosis.proses');
 
-Route::get('/hasil-diagnosis', function () {
-    return view('hasil-diagnosis');
-})->name('hasil-diagnosis');
+Route::get('/hasil-diagnosis', [DiagnosisController::class, 'hasil'])->name('hasil-diagnosis');
 
 Route::get('/ulasan', function () {
     return view('ulasan');
