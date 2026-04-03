@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
-
+use App\Models\Biodata;
 class DiagnosisController extends Controller
 {
     public function prosesDiagnosis(Request $request)
@@ -54,14 +54,49 @@ class DiagnosisController extends Controller
             'pencegahan' => $data['pencegahan'] ?? [],
         ];
 
-        return redirect()->route('hasil-diagnosis')
-            ->with('diagnosis', $diagnosis)
-            ->with('gejala', $inputNama);
+$biodataId = session('biodata_id');
+if ($biodataId) {
+    \App\Models\Biodata::where('id', $biodataId)->update([
+        'hasil_diagnosis' => $diagnosis['nama'],
+        'jenis' => $diagnosis['kategori']
+    ]);
+}
+
+return redirect()->route('hasil-diagnosis')
+->with('diagnosis', $diagnosis)
+->with('gejala', $inputNama);
+$biodataId = session('biodata_id');
     }
 
     // 🔥 halaman hasil
     public function hasil()
     {
         return view('hasil-diagnosis');
+    }
+
+    public function simpanBiodata(Request $request)
+    {
+        $request->validate([
+            'nama_pemilik' => 'required',
+            'nama_kucing' => 'required',
+            'umur_kucing' => 'required|numeric',
+            'jenis_kelamin' => 'required',
+            'berat_badan' => 'required|numeric',
+        ]);
+    
+        $data = \App\Models\Biodata::create([
+            'nama_pemilik' => $request->nama_pemilik,
+            'nama_kucing' => $request->nama_kucing,
+            'umur_kucing' => $request->umur_kucing,
+            'jenis_kelamin' => $request->jenis_kelamin,
+            'berat_badan' => $request->berat_badan,
+            'ras_kucing' => $request->ras_kucing,
+            'alamat' => $request->alamat,
+            'no_telepon' => $request->no_telepon,
+        ]);
+    
+        session(['biodata_id' => $data->id]);
+    
+        return redirect()->route('gejala');
     }
 }

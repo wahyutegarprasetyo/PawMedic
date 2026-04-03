@@ -325,7 +325,7 @@ body{
 
     <!-- FORM CARD -->
     <div class="form-card">
-        <form action="#" method="POST" id="biodataForm">
+    <form action="{{ route('biodata.simpan') }}" method="POST">
             @csrf
             
             <!-- Nama Pemilik -->
@@ -464,8 +464,6 @@ body{
 </div>
 
 <script>
-document.getElementById('biodataForm').addEventListener('submit', function(e) {
-    e.preventDefault();
     
     // Validasi sederhana
     const namaPemilik = document.getElementById('nama_pemilik').value.trim();

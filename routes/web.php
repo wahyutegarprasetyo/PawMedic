@@ -36,3 +36,5 @@ Route::get('/admin/login', [AdminController::class, 'login'])->name('admin.login
 Route::post('/admin/login', [AdminController::class, 'authenticate'])->name('admin.authenticate');
 Route::post('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard')->middleware('auth');
+
+Route::post('/biodata/simpan', [DiagnosisController::class, 'simpanBiodata'])->name('biodata.simpan');

@@ -8,7 +8,7 @@ app = Flask(__name__)
 # =========================
 # LOAD MODEL
 # =========================
-model = joblib.load("../python_artifacts/model.joblib")
+model = joblib.load("../python_artifacts/modell.joblib")
 
 # =========================
 # LOAD FEATURE
