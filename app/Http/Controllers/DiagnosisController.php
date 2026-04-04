@@ -14,7 +14,7 @@ class DiagnosisController extends Controller
         // validasi minimal 3 gejala
         if (count($input) < 3) {
             return redirect()->route('gejala')
-                ->with('error', 'Pilih minimal 3 gejala!');
+                ->with('error', 'Pilih minimal 5 dan maksimal 7 gejala!');
         }
 
         $inputNama = $input;

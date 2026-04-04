@@ -780,13 +780,13 @@ body::after{
 
     <!-- FORM CARD -->
     <div class="form-card">
-    <form action="{{ route('diagnosis.proses') }}" method="POST">
+    <form id="gejalaForm" action="{{ route('diagnosis.proses') }}" method="POST">
             @csrf
             
             <!-- Info Box -->
             <div class="info-box">
                 <div class="icon">💡</div>
-                <p>Pilih semua gejala yang Anda amati pada kucing Anda. Semakin banyak gejala yang dipilih, semakin akurat diagnosis yang akan diberikan.</p>
+                <p >Pilih minimal 4 dan maksimal 7 gejala yang terjadi pada kucing anda</p>
             </div>
 
             <!-- Gejala Section -->
@@ -848,7 +848,6 @@ const submitBtn = document.getElementById('submitBtn');
 const selectedCount = document.getElementById('selectedCount');
 const form = document.getElementById('gejalaForm');
 
-// Update selected count
 function updateSelectedCount() {
     const checked = document.querySelectorAll('.gejala-checkbox:checked').length;
     selectedCount.textContent = checked + ' dipilih';
@@ -858,7 +857,7 @@ function updateSelectedCount() {
     setTimeout(() => selectedCount.classList.remove('animate'), 500);
     
     // Enable/disable submit button
-    if (checked > 0) {
+    if (checked >= 4 && checked <= 7) {
         submitBtn.disabled = false;
         submitBtn.style.opacity = '1';
     } else {
@@ -874,7 +873,21 @@ checkboxes.forEach(checkbox => {
 
 // Form submission
 
+form.addEventListener('submit', function(e) {
+    const checked = document.querySelectorAll('.gejala-checkbox:checked').length;
 
+    if (checked < 5) {
+        e.preventDefault();
+        alert("Minimal pilih 4 gejala!");
+        return;
+    }
+
+    if (checked > 7) {
+        e.preventDefault();
+        alert("Maksimal hanya 7 gejala!");
+        return;
+    }
+});
 
 // Search functionality
 const searchInput = document.getElementById('searchGejala');

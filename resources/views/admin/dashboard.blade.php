@@ -141,11 +141,10 @@ body{
 }
 
 /* ===== STATS GRID ===== */
-.stats-grid{
-    display:grid;
-    grid-template-columns:repeat(auto-fit, minmax(250px, 1fr));
-    gap:24px;
-    margin-bottom:40px;
+.stats-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
 }
 
 .stat-card{
@@ -342,6 +341,14 @@ body{
 
     <!-- Statistics -->
     <div class="stats-grid">
+</div>
+<div id="chartBox" style="display:none; margin-top:20px;">
+    <div class="data-section">
+        <div class="section-title">📊 Statistik Penyakit</div>
+        <canvas id="chartPenyakit"></canvas>
+    </div>
+</div>
+
         <div class="stat-card">
             <div class="stat-header">
                 <div>
@@ -350,7 +357,7 @@ body{
                 </div>
                 <div class="stat-icon">📊</div>
             </div>
-            <div class="stat-change">+12 hari ini</div>
+            <div class="stat-change">+{{ $stats['today_diagnosis'] }} hari ini</div>
         </div>
 
         <div class="stat-card">
@@ -375,7 +382,7 @@ body{
             <div class="stat-change">Pengguna aktif</div>
         </div>
 
-        <div class="stat-card">
+        <div class="stat-card" onclick="toggleChart()" style="cursor:pointer;">
             <div class="stat-header">
                 <div>
                     <div class="stat-value" style="font-size:24px;">{{ $stats['most_common_disease'] }}</div>
@@ -436,6 +443,32 @@ body{
 </div>
 
 @include('components.scroll-top')
+<script>
+function toggleChart() {
+    const chartBox = document.getElementById('chartBox');
 
+    if (chartBox.style.display === "none") {
+        chartBox.style.display = "block";
+    } else {
+        chartBox.style.display = "none";
+    }
+}
+</script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<script>
+const ctx = document.getElementById('chartPenyakit');
+
+new Chart(ctx, {
+    type: 'bar',
+    data: {
+        labels: {!! json_encode($stats['chart_labels']) !!},
+        datasets: [{
+            label: 'Jumlah Kasus',
+            data: {!! json_encode($stats['chart_data']) !!}
+        }]
+    }
+});
+</script>
 </body>
 </html>
