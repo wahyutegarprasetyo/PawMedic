@@ -490,15 +490,15 @@ body::before{
     <!-- Stats -->
     <div class="stats-card">
         <div class="stat-item">
-            <div class="stat-value" id="totalReviews">12</div>
+            <div class="stat-value">{{ $total }}</div>
             <div class="stat-label">Total Ulasan</div>
         </div>
         <div class="stat-item">
-            <div class="stat-value" id="avgRating">4.8</div>
+            <div class="stat-value">{{ number_format($avg, 1) }}</div>
             <div class="stat-label">Rating Rata-rata</div>
         </div>
         <div class="stat-item">
-            <div class="stat-value" id="fiveStars">95%</div>
+            <div class="stat-value">{{ $fivePercent }}%</div>
             <div class="stat-label">5 Bintang</div>
         </div>
     </div>
@@ -509,29 +509,31 @@ body::before{
             <span>✍️</span>
             <span>Tulis Ulasan Anda</span>
         </div>
-        <form id="reviewForm">
+        <form method="POST" action="{{ route('ulasan.store') }}">
+    @csrf
             <div class="form-group">
                 <label>Nama Anda</label>
-                <input type="text" id="reviewName" placeholder="Masukkan nama Anda" required>
+                <input type="text" name="nama" placeholder="Masukkan nama Anda" required>
             </div>
             <div class="form-group">
                 <label>Nama Kucing</label>
-                <input type="text" id="reviewCat" placeholder="Nama kucing Anda (opsional)">
+                <input type="text" name="nama_kucing" placeholder="Nama kucing Anda">
             </div>
             <div class="form-group">
                 <label>Rating</label>
-                <div class="rating-input">
-                    <span class="star" data-rating="1">★</span>
-                    <span class="star" data-rating="2">★</span>
-                    <span class="star" data-rating="3">★</span>
-                    <span class="star" data-rating="4">★</span>
-                    <span class="star" data-rating="5">★</span>
-                    <input type="hidden" id="ratingValue" value="0" required>
-                </div>
+                <div id="rating-stars" style="font-size: 28px; cursor: pointer;">
+                <span data-value="1">☆</span>
+                <span data-value="2">☆</span>
+                <span data-value="3">☆</span>
+                <span data-value="4">☆</span>
+                <span data-value="5">☆</span>
+            </div>
+
+            <input type="hidden" name="rating" id="rating-value">
             </div>
             <div class="form-group">
                 <label>Ulasan</label>
-                <textarea id="reviewText" placeholder="Bagikan pengalaman Anda menggunakan PawMedic..." required></textarea>
+                <textarea name="komentar" placeholder="Bagikan pengalaman Anda menggunakan PawMedic..." required></textarea>
             </div>
             <button type="submit" class="btn btn-primary">
                 <span>Kirim Ulasan</span>
@@ -551,7 +553,49 @@ body::before{
                 <button class="filter-btn" data-filter="3">3 Bintang</button>
             </div>
         </div>
-        <div class="reviews-grid" id="reviewsGrid">
+        <div class="reviews-grid">
+
+        @foreach($ulasan as $review)
+<div class="review-card" data-rating="{{ $review->rating }}">
+    <div class="review-header">
+        <div class="avatar">{{ substr($review->nama,0,1) }}</div>
+        <div class="review-info">
+            <div class="review-name">{{ $review->nama }}</div>
+            <div class="review-cat">
+                {{ $review->hasil_diagnosis ?? 'Pengguna' }}
+            </div>
+            <div class="review-rating">
+                {{ str_repeat('★', $review->rating) }}
+            </div>
+        </div>
+    </div>
+
+    <!-- ✅ KOMENTAR UNTUK SEMUA -->
+    <p class="review-text">{{ $review->komentar }}</p>
+
+    <!-- ✅ HANYA ADMIN -->
+    @auth
+    @if(Auth::user()->email === 'admin@pawmedic.app')
+        <form action="{{ route('ulasan.delete', $review->id) }}" 
+              method="POST" 
+              onsubmit="return confirm('Yakin hapus ulasan ini?')"
+              style="margin-top:10px;">
+            @csrf
+            @method('DELETE')
+            <button type="submit" 
+                    style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:6px;">
+                🗑 Hapus
+            </button>
+        </form>
+    @endif
+    @endauth
+
+    <div class="review-date">
+        {{ $review->created_at->diffForHumans() }}
+    </div>
+</div>
+
+@endforeach
             <!-- Reviews will be populated by JavaScript -->
         </div>
     </div>
@@ -559,182 +603,63 @@ body::before{
 
 @include('components.toast')
 @include('components.scroll-top')
-
 <script>
-// Sample reviews data
-const reviews = [
-    {
-        id: 1,
-        name: 'Siti',
-        cat: 'Kiki',
-        rating: 5,
-        text: 'PawMedic memberi panduan cepat yang membantu saya mengambil tindakan tepat pada kucing saya. Sangat membantu!',
-        date: '2 hari yang lalu'
-    },
-    {
-        id: 2,
-        name: 'Budi',
-        cat: 'Cleo',
-        rating: 5,
-        text: 'Aplikasinya mudah dipahami dan rekomendasinya sangat membantu sebelum pergi ke dokter hewan.',
-        date: '5 hari yang lalu'
-    },
-    {
-        id: 3,
-        name: 'Lina',
-        cat: 'Oreo',
-        rating: 5,
-        text: 'Sangat berguna! Saya merasa lebih tenang mengetahui langkah awal yang harus dilakukan.',
-        date: '1 minggu yang lalu'
-    },
-    {
-        id: 4,
-        name: 'Ahmad',
-        cat: 'Milo',
-        rating: 5,
-        text: 'Sistem diagnosisnya akurat dan mudah digunakan. Sangat membantu untuk pemilik kucing pemula seperti saya.',
-        date: '2 minggu yang lalu'
-    },
-    {
-        id: 5,
-        name: 'Dewi',
-        cat: 'Luna',
-        rating: 4,
-        text: 'Bagus sekali aplikasinya. Interface-nya user-friendly dan informasinya lengkap.',
-        date: '3 minggu yang lalu'
-    },
-    {
-        id: 6,
-        name: 'Rudi',
-        cat: 'Max',
-        rating: 5,
-        text: 'PawMedic membantu saya memahami kondisi kucing dengan lebih baik. Terima kasih!',
-        date: '1 bulan yang lalu'
-    }
-];
+const buttons = document.querySelectorAll('.filter-btn');
+const cards = document.querySelectorAll('.review-card');
 
-let currentFilter = 'all';
+buttons.forEach(btn => {
+    btn.addEventListener('click', () => {
 
-// Rating stars
-const stars = document.querySelectorAll('.star');
-const ratingInput = document.getElementById('ratingValue');
+        // hapus active semua
+        buttons.forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+
+        const filter = btn.getAttribute('data-filter');
+
+        cards.forEach(card => {
+            const rating = card.getAttribute('data-rating');
+
+            if (filter === 'all' || rating === filter) {
+                card.style.display = 'block';
+            } else {
+                card.style.display = 'none';
+            }
+        });
+    });
+});
+</script>
+<script>
+const stars = document.querySelectorAll('#rating-stars span');
+const ratingInput = document.getElementById('rating-value');
 
 stars.forEach((star, index) => {
+
+    // ✅ CLICK (INI YANG KAMU KURANG)
     star.addEventListener('click', () => {
-        const rating = index + 1;
-        ratingInput.value = rating;
-        updateStars(rating);
+        const value = star.getAttribute('data-value');
+        ratingInput.value = value;
+
+        stars.forEach((s, i) => {
+            s.textContent = i < value ? '★' : '☆';
+        });
     });
-    
-    star.addEventListener('mouseenter', () => {
-        updateStars(index + 1);
+
+    // hover (punya kamu)
+    star.addEventListener('mouseover', () => {
+        stars.forEach((s, i) => {
+            s.textContent = i <= index ? '★' : '☆';
+        });
     });
-});
 
-document.querySelector('.rating-input').addEventListener('mouseleave', () => {
-    const currentRating = parseInt(ratingInput.value) || 0;
-    updateStars(currentRating);
-});
-
-function updateStars(rating) {
-    stars.forEach((star, index) => {
-        if (index < rating) {
-            star.classList.add('active');
-        } else {
-            star.classList.remove('active');
-        }
+    // keluar hover
+    star.addEventListener('mouseout', () => {
+        let value = ratingInput.value;
+        stars.forEach((s, i) => {
+            s.textContent = i < value ? '★' : '☆';
+        });
     });
-}
 
-// Display reviews
-function displayReviews(filter = 'all') {
-    const grid = document.getElementById('reviewsGrid');
-    const filteredReviews = filter === 'all' 
-        ? reviews 
-        : reviews.filter(r => r.rating === parseInt(filter));
-    
-    grid.innerHTML = filteredReviews.map(review => `
-        <div class="review-card">
-            <div class="review-header">
-                <div class="avatar">${review.name.charAt(0)}</div>
-                <div class="review-info">
-                    <div class="review-name">${review.name}</div>
-                    <div class="review-cat">pemilik dari <em>${review.cat}</em></div>
-                    <div class="review-rating">${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)}</div>
-                </div>
-            </div>
-            <p class="review-text">${review.text}</p>
-            <div class="review-date">${review.date}</div>
-        </div>
-    `).join('');
-}
-
-// Filter buttons
-document.querySelectorAll('.filter-btn').forEach(btn => {
-    btn.addEventListener('click', () => {
-        document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        currentFilter = btn.dataset.filter;
-        displayReviews(currentFilter);
-    });
 });
-
-// Form submission
-document.getElementById('reviewForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    
-    const name = document.getElementById('reviewName').value;
-    const cat = document.getElementById('reviewCat').value;
-    const rating = parseInt(ratingInput.value);
-    const text = document.getElementById('reviewText').value;
-    
-    if (!rating || rating === 0) {
-        alert('Mohon berikan rating!');
-        return;
-    }
-    
-    // Add new review
-    const newReview = {
-        id: reviews.length + 1,
-        name: name,
-        cat: cat || 'Kucing',
-        rating: rating,
-        text: text,
-        date: 'Baru saja'
-    };
-    
-    reviews.unshift(newReview);
-    displayReviews(currentFilter);
-    updateStats();
-    
-    // Reset form
-    this.reset();
-    ratingInput.value = 0;
-    updateStars(0);
-    
-    // Show toast
-    if (window.showToast) {
-        showToast('Terima kasih atas ulasan Anda!', 'success', 'Ulasan Terkirim');
-    } else {
-        alert('Terima kasih atas ulasan Anda! 🐾');
-    }
-});
-
-// Update stats
-function updateStats() {
-    const total = reviews.length;
-    const avg = (reviews.reduce((sum, r) => sum + r.rating, 0) / total).toFixed(1);
-    const fiveStars = Math.round((reviews.filter(r => r.rating === 5).length / total) * 100);
-    
-    document.getElementById('totalReviews').textContent = total;
-    document.getElementById('avgRating').textContent = avg;
-    document.getElementById('fiveStars').textContent = fiveStars + '%';
-}
-
-// Initialize
-displayReviews();
-updateStats();
 </script>
-
 </body>
 </html>

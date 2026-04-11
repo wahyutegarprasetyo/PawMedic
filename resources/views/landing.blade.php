@@ -613,55 +613,25 @@ footer{
         </a>
     </p>
     <div class="testimonials">
-        <div class="card testimonial">
-            <div class="testimonial-head">
-                <div class="avatar" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img">
-                        <path d="M4 10c1-3 3-4 8-4s7 1 8 4c0 5-3 7-8 7s-8-2-8-7z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="9" cy="11" r="0.9" fill="#fff"/>
-                        <circle cx="15" cy="11" r="0.9" fill="#fff"/>
-                    </svg>
+    @foreach($ulasan as $item)
+    <div class="card testimonial">
+        <div class="testimonial-head">
+            <div class="avatar">
+                {{ strtoupper(substr($item->nama, 0, 1)) }}
+            </div>
+            <div class="meta">
+                <div class="rating">
+                    {{ str_repeat('★', $item->rating) }}
                 </div>
-                <div class="meta">
-                    <div class="rating" aria-label="5 dari 5 bintang">★★★★★</div>
-                    <div class="author">Siti — pemilik dari <em>Kiki</em></div>
+                <div class="author">
+                    {{ $item->nama }} — pemilik dari <em>{{ $item->nama_kucing }}</em>
                 </div>
             </div>
-            <p class="quote">PawMedic memberi panduan cepat yang membantu saya mengambil tindakan tepat pada kucing saya.</p>
         </div>
-        <div class="card testimonial">
-            <div class="testimonial-head">
-                <div class="avatar" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img">
-                        <path d="M4 10c1-3 3-4 8-4s7 1 8 4c0 5-3 7-8 7s-8-2-8-7z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="9" cy="11" r="0.9" fill="#fff"/>
-                        <circle cx="15" cy="11" r="0.9" fill="#fff"/>
-                    </svg>
-                </div>
-                <div class="meta">
-                    <div class="rating" aria-label="5 dari 5 bintang">★★★★★</div>
-                    <div class="author">Budi — pemilik dari <em>Cleo</em></div>
-                </div>
-            </div>
-            <p class="quote">Aplikasinya mudah dipahami dan rekomendasinya sangat membantu sebelum pergi ke dokter hewan.</p>
-        </div>
-        <div class="card testimonial">
-            <div class="testimonial-head">
-                <div class="avatar" aria-hidden="true">
-                    <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg" aria-hidden="true" role="img">
-                        <path d="M4 10c1-3 3-4 8-4s7 1 8 4c0 5-3 7-8 7s-8-2-8-7z" stroke="#fff" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
-                        <circle cx="9" cy="11" r="0.9" fill="#fff"/>
-                        <circle cx="15" cy="11" r="0.9" fill="#fff"/>
-                    </svg>
-                </div>
-                <div class="meta">
-                    <div class="rating" aria-label="5 dari 5 bintang">★★★★★</div>
-                    <div class="author">Lina — pemilik dari <em>Oreo</em></div>
-                </div>
-            </div>
-            <p class="quote">Sangat berguna! Saya merasa lebih tenang mengetahui langkah awal yang harus dilakukan.</p>
-        </div>
+        <p class="quote">{{ $item->komentar }}</p>
     </div>
+    @endforeach
+</div>
 </section>
 
 <!-- FOOTER -->

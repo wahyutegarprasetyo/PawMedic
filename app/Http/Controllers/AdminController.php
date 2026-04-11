@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use App\Models\Biodata;
 use Carbon\Carbon;
+use Carbon\CarbonPeriod;
+use App\Models\Ulasan;
+use Illuminate\Support\Facades\DB;
 
 class AdminController extends Controller
 {
@@ -39,17 +42,39 @@ class AdminController extends Controller
 
     public function dashboard()
 {
+
     // total diagnosis
     $totalDiagnosis = Biodata::count();
 
     // hari ini
     $todayDiagnosis = Biodata::whereDate('created_at', Carbon::today())->count();
 
+    // kemarin
+    $yesterday = Biodata::whereDate('created_at', Carbon::yesterday())->count();
+    $diff = $todayDiagnosis - $yesterday;
+
     // total user
     $totalUsers = Biodata::count();
 
+    // user list
+  $sort = request('sort');
+
+if ($sort == 'oldest') {
+    $data = Biodata::orderBy('created_at', 'asc')->get();
+} else {
+    $data = Biodata::orderBy('created_at', 'desc')->get();
+}
+
     // penyakit paling umum
     $mostCommon = Biodata::select('hasil_diagnosis')
+        ->whereNotNull('hasil_diagnosis')
+        ->groupBy('hasil_diagnosis')
+        ->orderByRaw('COUNT(*) DESC')
+        ->value('hasil_diagnosis');
+
+    // penyakit terbanyak hari ini
+    $todayDisease = Biodata::whereDate('created_at', Carbon::today())
+        ->select('hasil_diagnosis')
         ->whereNotNull('hasil_diagnosis')
         ->groupBy('hasil_diagnosis')
         ->orderByRaw('COUNT(*) DESC')
@@ -61,7 +86,6 @@ class AdminController extends Controller
         ->take(5)
         ->get();
 
-    // format tabel
     $recentFormatted = $recent->map(function ($item) {
         return [
             'date' => $item->created_at,
@@ -70,7 +94,7 @@ class AdminController extends Controller
         ];
     });
 
-    // 🔥 CHART (HARUS DI LUAR MAP)
+    // chart penyakit
     $diseaseStats = Biodata::select('hasil_diagnosis')
         ->whereNotNull('hasil_diagnosis')
         ->get()
@@ -82,6 +106,19 @@ class AdminController extends Controller
     $chartLabels = $diseaseStats->keys()->values();
     $chartData = $diseaseStats->values();
 
+    // 🔥 7 hari terakhir
+    $period = CarbonPeriod::create(Carbon::now()->subDays(6), Carbon::now());
+
+    $dailyLabels = [];
+    $dailyData = [];
+
+    foreach ($period as $date) {
+        $count = Biodata::whereDate('created_at', $date)->count();
+
+        $dailyLabels[] = $date->format('d M');
+        $dailyData[] = $count;
+    }
+
     // kirim ke blade
     $stats = [
         'total_diagnosis' => $totalDiagnosis,
@@ -90,10 +127,22 @@ class AdminController extends Controller
         'most_common_disease' => $mostCommon,
         'recent_diagnosis' => $recentFormatted,
         'chart_labels' => $chartLabels,
-        'chart_data' => $chartData
+        'chart_data' => $chartData,
+        'diagnosis_diff' => $diff,
+        'today_top_disease' => $todayDisease,
+        'daily_labels' => $dailyLabels,
+        'daily_data' => $dailyData
     ];
+    // 🔥 STAT
+    $ratingChart = Ulasan::select('rating', DB::raw('count(*) as total'))
+    ->groupBy('rating')
+    ->orderBy('rating')
+    ->get();
 
-    return view('admin.dashboard', compact('stats'));
+$stats['rating_labels'] = $ratingChart->pluck('rating');
+$stats['rating_data'] = $ratingChart->pluck('total');
+
+    return view('admin.dashboard', compact('stats', 'data'));
 }
 
     public function logout(Request $request)
@@ -120,4 +169,31 @@ class AdminController extends Controller
             ]
         ];
     }
+    public function statistik()
+{
+    $diseaseStats = Biodata::select('hasil_diagnosis')
+        ->whereNotNull('hasil_diagnosis')
+        ->get()
+        ->groupBy('hasil_diagnosis')
+        ->map(function ($item) {
+            return count($item);
+        });
+
+    $chartLabels = $diseaseStats->keys()->values();
+    $chartData = $diseaseStats->values();
+
+    return view('admin.statistik', compact('chartLabels', 'chartData'));
+}
+public function sortDiagnosis(Request $request)
+{
+    $sort = $request->sort;
+
+    if ($sort == 'oldest') {
+        $data = Biodata::orderBy('created_at', 'asc')->get();
+    } else {
+        $data = Biodata::orderBy('created_at', 'desc')->get();
+    }
+
+    return response()->json($data);
+}
 }

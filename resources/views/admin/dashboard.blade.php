@@ -145,6 +145,7 @@ body{
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 20px;
+    margin-bottom: 30px;
 }
 
 .stat-card{
@@ -306,6 +307,9 @@ body{
         padding:12px 8px;
     }
 }
+#chartBox {
+    transition: all 0.3s ease;
+}
 </style>
 </head>
 
@@ -341,15 +345,8 @@ body{
 
     <!-- Statistics -->
     <div class="stats-grid">
-</div>
-<div id="chartBox" style="display:none; margin-top:20px;">
-    <div class="data-section">
-        <div class="section-title">📊 Statistik Penyakit</div>
-        <canvas id="chartPenyakit"></canvas>
-    </div>
-</div>
 
-        <div class="stat-card">
+    <div class="stat-card">
             <div class="stat-header">
                 <div>
                     <div class="stat-value">{{ $stats['total_diagnosis'] }}</div>
@@ -358,6 +355,10 @@ body{
                 <div class="stat-icon">📊</div>
             </div>
             <div class="stat-change">+{{ $stats['today_diagnosis'] }} hari ini</div>
+            <a href="#" onclick="toggleDiagnosis(); return false;"
+   style="margin-top:10px; display:inline-block; font-size:13px; color:#4bb66f; font-weight:600;">
+    Lihat Data →
+</a>
         </div>
 
         <div class="stat-card">
@@ -369,6 +370,19 @@ body{
                 <div class="stat-icon">📈</div>
             </div>
             <div class="stat-change">Aktif hari ini</div>
+            <div class="stat-change">
+    @if($stats['diagnosis_diff'] > 0)
+        ↑ +{{ $stats['diagnosis_diff'] }} dari kemarin
+    @elseif($stats['diagnosis_diff'] < 0)
+        ↓ {{ $stats['diagnosis_diff'] }} dari kemarin
+    @else
+        Sama dengan kemarin
+    @endif
+</div>
+
+<div style="font-size:12px; color:#64748b; margin-top:4px;">
+    Terbanyak: {{ $stats['today_top_disease'] ?? '-' }}
+</div>
         </div>
 
         <div class="stat-card">
@@ -380,9 +394,13 @@ body{
                 <div class="stat-icon">👥</div>
             </div>
             <div class="stat-change">Pengguna aktif</div>
+            <a href="#" onclick="toggleUsers(); return false;"
+       style="margin-top:10px; display:inline-block; font-size:13px; color:#4bb66f; font-weight:600;">
+        Lihat Data →
+    </a>
         </div>
 
-        <div class="stat-card" onclick="toggleChart()" style="cursor:pointer;">
+        <div class="stat-card">
             <div class="stat-header">
                 <div>
                     <div class="stat-value" style="font-size:24px;">{{ $stats['most_common_disease'] }}</div>
@@ -391,8 +409,112 @@ body{
                 <div class="stat-icon">🩺</div>
             </div>
             <div class="stat-change">Paling sering didiagnosis</div>
-        </div>
+        
+            <a href="#" onclick="toggleChart(); return false;"
+   style="margin-top:10px; display:inline-block; font-size:13px; color:#4bb66f; font-weight:600;">
+    Lihat Data →
+</a>
+</div>
     </div>
+    
+<div id="chartBox" style="display:none; margin-top:20px;">
+
+<div style="display:grid; grid-template-columns:1fr 1fr; gap: 20px;">
+<div class="data-section">
+        <div class="section-title">📊 Statistik Penyakit</div>
+        <div style="max-width:600px; margin:auto;">
+        <canvas id="chartPenyakit"></canvas></div>
+        </div>
+
+<div class="data-section">
+    <div class="section-title">⭐ Distribusi Rating Ulasan</div>
+    <div style="max-width:400px; margin:auto;">
+    <canvas id="chartRating" height="250"></canvas></div>
+</div>
+</div>
+
+    <div class="data-section">
+    <div class="section-title">📈 Tren Diagnosis (7 Hari Terakhir)</div>
+    <canvas id="chartHarian"></canvas>
+</div>
+</div>
+
+<div id="diagnosisBox" style="display:none; margin-top:20px;">
+    <div class="data-section">
+        <div class="section-title">📋 Data Diagnosis</div>
+
+        <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
+
+        <input type="text" id="searchDiagnosis" 
+                   class="form-control" 
+                   placeholder="🔍 Cari..." style="max-width:200px;">
+
+                   <select id="filterDiagnosis" class="form-control" style="max-width:200px;">
+                <option value="">Semua Penyakit</option>
+                @foreach($data->pluck('hasil_diagnosis')->unique() as $penyakit)
+                    <option value="{{ strtolower($penyakit) }}">{{ $penyakit }}</option>
+                @endforeach
+            </select>
+
+            <form method="GET">
+            <select id="sortDiagnosis">
+            <option value="latest">Terbaru</option>
+            <option value="oldest">Terlama</option>
+        </select>
+</form>
+
+            </div>
+
+            <div style="max-height:400px; overflow-y:auto;">
+            <table class="table">
+            <thead>
+                <tr>
+                    <th>Nama Pemilik</th>
+                    <th>Nama Kucing</th>
+                    <th>Penyakit</th>
+                    <th>Tanggal</th>
+                </tr>
+            </thead>
+            <tbody id="diagnosisTable">
+                @foreach($data as $user)
+                <tr data-date="{{ $user->created_at }}">
+                    <td>{{ $user->nama_pemilik }}</td>
+                    <td>{{ $user->nama_kucing }}</td>
+                    <td>{{ $user->hasil_diagnosis ?? '-' }}</td>
+                    <td>{{ \Carbon\Carbon::parse($user->created_at)->format('d M Y') }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
+</div>
+
+<div id="userBox" style="display:none; margin-top:20px;">
+    <div class="data-section">
+        <div class="section-title">👥 Data Pengguna</div>
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Nama Pemilik</th>
+                    <th>No Telepon</th>
+                    <th>Alamat</th>
+                    <th>Nama Kucing</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach($data ?? [] as $user)
+                <tr>
+                    <td>{{ $user->nama_pemilik }}</td>
+                    <td>{{ $user->no_telepon }}</td>
+                    <td>{{ $user->alamat ?? 'Tidak tersedia'}}</td>
+                    <td>{{ $user->nama_kucing }}</td>
+                </tr>
+                @endforeach
+            </tbody>
+        </table>
+    </div>
+</div>
 
     <!-- Recent Diagnosis -->
     <div class="data-section">
@@ -443,31 +565,237 @@ body{
 </div>
 
 @include('components.scroll-top')
+
 <script>
+    let currentPage = 1;
+const rowsPerPage = 20;
+let allRows = [];
+
+
+// SEARCH + FILTER + SORT
+function applyFilters() {
+    let search = document.getElementById("searchDiagnosis").value.toLowerCase();
+    let filter = document.getElementById("filterDiagnosis").value;
+
+    let rows = Array.from(document.querySelectorAll("#diagnosisTable tr"));
+
+    let filtered = rows.filter(row => {
+        let text = row.innerText.toLowerCase();
+        let penyakit = row.children[2].innerText.toLowerCase();
+
+        return text.includes(search) &&
+               (filter === "" || penyakit === filter);
+    });
+
+    // SEMUA DIHIDE DULU
+    rows.forEach(row => row.style.display = "none");
+
+    // TAMPILKAN HASIL
+    filtered.forEach(row => row.style.display = "");
+}
+// TAMPILKAN DATA
+function displayRows(rows) {
+    let start = (currentPage - 1) * rowsPerPage;
+    let end = start + rowsPerPage;
+
+    let visible = rows.slice(start, end);
+
+    document.getElementById("tableBody").innerHTML = "";
+
+    visible.forEach(row => {
+        document.getElementById("tableBody").appendChild(row);
+    });
+
+    document.getElementById("pageInfo").innerText =
+        `Page ${currentPage}`;
+}
+
+// PAGINATION
+function nextPage() {
+    currentPage++;
+    applyFilters();
+}
+
+function prevPage() {
+    if (currentPage > 1) {
+        currentPage--;
+        applyFilters();
+    }
+}
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
+
+<script>
+window.onload = function () {
+    allRows = Array.from(document.querySelectorAll("#tableBody tr"));
+    applyFilters();
+
+    document.getElementById("searchDiagnosis").addEventListener("keyup", () => {
+        currentPage = 1;
+        applyFilters();
+    });
+
+    document.getElementById("filterDiagnosis").addEventListener("change", () => {
+        currentPage = 1;
+        applyFilters();
+    });
+
+    document.getElementById("sortDiagnosis").addEventListener("change", () => {
+        currentPage = 1;
+        applyFilters();
+    });
+};
+    const ctx2 = document.getElementById('chartHarian');
+
+new Chart(ctx2, {
+    type: 'line',
+    data: {
+        labels: {!! json_encode($stats['daily_labels']) !!},
+        datasets: [{
+            label: 'Jumlah Diagnosis',
+            data: {!! json_encode($stats['daily_data']) !!},
+            tension: 0.4,
+            fill: false,
+            borderWidth: 3,
+            pointRadius: 5
+        }]
+    }
+});
+let chart = null;
+
 function toggleChart() {
     const chartBox = document.getElementById('chartBox');
 
-    if (chartBox.style.display === "none") {
+    const isHidden = window.getComputedStyle(chartBox).display === "none";
+
+    if (isHidden) {
         chartBox.style.display = "block";
+
+        chartBox.scrollIntoView({ behavior: 'smooth' });
+
+        if (!chart) {
+            const ctx = document.getElementById('chartPenyakit');
+
+            chart = new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: {!! json_encode($stats['chart_labels']) !!},
+                    datasets: [{
+                        label: 'Jumlah Kasus',
+                        data: {!! json_encode($stats['chart_data']) !!}
+                    }]
+                },
+                options: {
+                    plugins: {
+                        legend: { display: false }
+                    }
+                }
+            });
+        }
+
+        loadRatingChart();
+
     } else {
         chartBox.style.display = "none";
     }
 }
-</script>
-<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+function toggleUsers() {
+    const userBox = document.getElementById('userBox');
+    const chartBox = document.getElementById('chartBox');
 
-<script>
-const ctx = document.getElementById('chartPenyakit');
+    chartBox.style.display = "none"; // tutup chart
 
-new Chart(ctx, {
-    type: 'bar',
-    data: {
-        labels: {!! json_encode($stats['chart_labels']) !!},
-        datasets: [{
-            label: 'Jumlah Kasus',
-            data: {!! json_encode($stats['chart_data']) !!}
-        }]
+    if (userBox.style.display === "none") {
+        userBox.style.display = "block";
+        userBox.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        userBox.style.display = "none";
     }
+}
+function toggleDiagnosis() {
+    const diagnosisBox = document.getElementById('diagnosisBox');
+    const chartBox = document.getElementById('chartBox');
+    const userBox = document.getElementById('userBox');
+
+    // tutup yang lain biar rapi
+    chartBox.style.display = "none";
+    userBox.style.display = "none";
+
+    if (diagnosisBox.style.display === "none") {
+        diagnosisBox.style.display = "block";
+        diagnosisBox.scrollIntoView({ behavior: 'smooth' });
+    } else {
+        diagnosisBox.style.display = "none";
+    }
+}
+let ratingChart = null;
+
+function loadRatingChart() {
+    if (ratingChart) return;
+
+    const ctx = document.getElementById('chartRating');
+
+    ratingChart = new Chart(ctx, {
+    type: 'pie',
+    data: {
+        labels: {!! json_encode($stats['rating_labels']) !!}.map(r => 'Bintang ' + r),
+        datasets: [{
+            data: {!! json_encode($stats['rating_data']) !!}
+        }]
+    },
+    options: {
+        plugins: {
+            datalabels: {
+                color: '#fff',
+                formatter: (value, context) => {
+                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
+                    let percent = (value / total * 100).toFixed(1);
+                    return percent + '%';
+                },
+                font: {
+                    weight: 'bold'
+                }
+            },
+            legend: {
+                position: 'bottom'
+            }
+        }
+    },
+    plugins: [ChartDataLabels]
+});}
+</script>
+<script>
+document.getElementById('sortDiagnosis').addEventListener('change', function() {
+    let sort = this.value;
+    let table = document.getElementById('diagnosisTable');
+
+    // loading dulu
+    table.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
+
+    fetch(`/admin/sort-diagnosis?sort=${sort}`)
+        .then(response => response.json())
+        .then(data => {
+
+            table.innerHTML = '';
+
+            data.forEach(item => {
+                table.innerHTML += `
+                    <tr>
+                        <td>${item.nama_pemilik}</td>
+                        <td>${item.nama_kucing}</td>
+                        <td>${item.hasil_diagnosis ?? '-'}</td>
+                        <td>${new Date(item.created_at).toLocaleDateString()}</td>
+                    </tr>
+                `;
+            });
+
+        })
+        .catch(error => {
+            table.innerHTML = "<tr><td colspan='4'>Error load data</td></tr>";
+            console.error(error);
+        });
 });
 </script>
 </body>

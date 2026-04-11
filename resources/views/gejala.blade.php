@@ -876,7 +876,7 @@ checkboxes.forEach(checkbox => {
 form.addEventListener('submit', function(e) {
     const checked = document.querySelectorAll('.gejala-checkbox:checked').length;
 
-    if (checked < 5) {
+    if (checked < 4) {
         e.preventDefault();
         alert("Minimal pilih 4 gejala!");
         return;

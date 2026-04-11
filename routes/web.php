@@ -4,11 +4,24 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\GejalaController;
+use App\Http\Controllers\UlasanController;
+use App\Models\Ulasan;
+
+Route::get('/admin/sort-diagnosis', [AdminController::class, 'sortDiagnosis']);
+
+Route::delete('/ulasan/{id}', [UlasanController::class, 'destroy'])->name('ulasan.delete');
+
+Route::get('/ulasan', [UlasanController::class, 'index'])->name('ulasan');
+Route::post('/ulasan', [UlasanController::class, 'store'])->name('ulasan.store');
 
 Route::get('/gejala', [GejalaController::class, 'index'])->name('gejala');
 
+Route::delete('/admin/ulasan/{id}', [UlasanController::class, 'destroy'])
+    ->name('ulasan.delete');
+
 Route::get('/', function () {
-    return view('landing');
+    $ulasan = Ulasan::latest()->take(3)->get();
+    return view('landing', compact('ulasan'));
 });
 
 Route::get('/biodata', function () {
@@ -23,10 +36,6 @@ Route::post('/diagnosis/proses', [DiagnosisController::class, 'prosesDiagnosis']
 
 Route::get('/hasil-diagnosis', [DiagnosisController::class, 'hasil'])->name('hasil-diagnosis');
 
-Route::get('/ulasan', function () {
-    return view('ulasan');
-})->name('ulasan');
-
 Route::get('/faq', function () {
     return view('faq');
 })->name('faq');
@@ -36,5 +45,5 @@ Route::get('/admin/login', [AdminController::class, 'login'])->name('admin.login
 Route::post('/admin/login', [AdminController::class, 'authenticate'])->name('admin.authenticate');
 Route::post('/admin/logout', [AdminController::class, 'logout'])->name('admin.logout');
 Route::get('/admin/dashboard', [AdminController::class, 'dashboard'])->name('admin.dashboard')->middleware('auth');
-
 Route::post('/biodata/simpan', [DiagnosisController::class, 'simpanBiodata'])->name('biodata.simpan');
+Route::get('/admin/statistik', [AdminController::class, 'statistik'])->name('admin.statistik');
