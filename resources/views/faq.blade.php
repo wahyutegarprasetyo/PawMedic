@@ -226,60 +226,17 @@ body::before{
     </div>
 
     <div class="faq-list">
-        <div class="faq-card">
-            <div class="faq-question">Apa itu PawMedic?</div>
-            <div class="faq-answer">
-                PawMedic adalah aplikasi sistem pakar yang membantu pemilik kucing memahami gejala dan mendapatkan rekomendasi perawatan awal. Aplikasi ini menggunakan metode sistem pakar untuk menganalisis gejala yang dipilih dan memberikan diagnosis kemungkinan penyakit.
+        @forelse(($faqs ?? []) as $faq)
+            <div class="faq-card">
+                <div class="faq-question">{{ $faq['question'] ?? '-' }}</div>
+                <div class="faq-answer" style="white-space: pre-line;">{{ $faq['answer'] ?? '-' }}</div>
             </div>
-        </div>
-
-        <div class="faq-card">
-            <div class="faq-question">Bagaimana cara menggunakan PawMedic?</div>
-            <div class="faq-answer">
-                Cara menggunakan PawMedic sangat mudah:
-                <ol style="margin:12px 0; padding-left:20px;">
-                    <li>Isi biodata kucing Anda</li>
-                    <li>Pilih gejala yang Anda amati pada kucing</li>
-                    <li>Sistem akan menganalisis dan memberikan hasil diagnosis</li>
-                    <li>Baca rekomendasi perawatan yang diberikan</li>
-                </ol>
+        @empty
+            <div class="faq-card">
+                <div class="faq-question">Belum ada FAQ</div>
+                <div class="faq-answer">Konten FAQ belum tersedia.</div>
             </div>
-        </div>
-
-        <div class="faq-card">
-            <div class="faq-question">Apakah hasil diagnosis akurat?</div>
-            <div class="faq-answer">
-                Hasil diagnosis dari PawMedic adalah sebagai panduan awal berdasarkan gejala yang Anda pilih. Untuk diagnosis yang akurat dan penanganan yang tepat, sangat disarankan untuk berkonsultasi langsung dengan dokter hewan profesional. PawMedic tidak menggantikan konsultasi medis profesional.
-            </div>
-        </div>
-
-        <div class="faq-card">
-            <div class="faq-question">Apakah data saya aman?</div>
-            <div class="faq-answer">
-                Ya, data yang Anda masukkan hanya digunakan untuk keperluan diagnosis dan tidak dibagikan kepada pihak ketiga. Semua data disimpan secara lokal di browser Anda (sessionStorage) dan tidak dikirim ke server kecuali untuk keperluan analisis diagnosis.
-            </div>
-        </div>
-
-        <div class="faq-card">
-            <div class="faq-question">Berapa banyak gejala yang harus dipilih?</div>
-            <div class="faq-answer">
-                Anda dapat memilih sebanyak mungkin gejala yang sesuai dengan kondisi kucing Anda. Semakin banyak gejala yang dipilih, semakin akurat diagnosis yang akan diberikan. Namun, pastikan gejala yang dipilih benar-benar Anda amati pada kucing.
-            </div>
-        </div>
-
-        <div class="faq-card">
-            <div class="faq-question">Apakah aplikasi ini gratis?</div>
-            <div class="faq-answer">
-                Ya, PawMedic sepenuhnya gratis untuk digunakan. Anda dapat melakukan diagnosis tanpa batas dan mengakses semua fitur yang tersedia tanpa biaya apapun.
-            </div>
-        </div>
-
-        <div class="faq-card">
-            <div class="faq-question">Bagaimana jika kucing saya dalam kondisi darurat?</div>
-            <div class="faq-answer">
-                Jika kucing Anda menunjukkan tanda-tanda darurat seperti kesulitan bernapas, kejang, tidak sadar, atau luka parah, segera bawa ke dokter hewan terdekat atau klinik hewan darurat. Jangan menunggu diagnosis dari aplikasi ini.
-            </div>
-        </div>
+        @endforelse
     </div>
 </div>
 

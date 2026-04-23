@@ -83,6 +83,16 @@ h1,h2,h3{
     gap:18px;
     align-items:center;
 }
+.menu-toggle{
+    display:none;
+    border:1px solid #d1d5db;
+    background:#fff;
+    border-radius:10px;
+    padding:8px 10px;
+    font-size:20px;
+    cursor:pointer;
+    color:#114d3a;
+}
 .nav-menu a{
     text-decoration:none;
     color:#555;
@@ -471,6 +481,26 @@ footer{
 
 /* ===== RESPONSIVE ===== */
 @media(max-width:900px){
+    .container{
+        padding:24px;
+    }
+    .navbar{
+        flex-direction:column;
+        align-items:flex-start;
+        gap:14px;
+        margin-bottom:28px;
+    }
+    .nav-menu{
+        width:100%;
+        flex-wrap:wrap;
+        gap:10px;
+    }
+    .nav-menu a{
+        font-size:14px;
+    }
+    .nav-menu .btn{
+        margin-left:auto;
+    }
     .hero{
         flex-direction:column;
         text-align:center;
@@ -503,9 +533,56 @@ footer{
     .features{
         grid-template-columns:repeat(2,1fr);
     }
+    section{
+        margin-top:72px;
+    }
+    #diagnosa{
+        padding:24px;
+    }
 }
 
 @media(max-width:500px){
+    .container{
+        padding:16px;
+    }
+    .logo-text{
+        font-size:18px;
+    }
+    .navbar{
+        padding:12px 0;
+        align-items:stretch;
+    }
+    .menu-toggle{
+        display:inline-flex;
+        align-items:center;
+        justify-content:center;
+        align-self:flex-end;
+    }
+    .nav-menu{
+        display:none;
+        grid-template-columns:1fr 1fr;
+        width:100%;
+    }
+    .nav-menu.open{
+        display:grid;
+    }
+    .nav-menu a{
+        text-align:center;
+        padding:8px 6px;
+        border-radius:8px;
+        background:#fff;
+        border:1px solid #eef5f3;
+    }
+    .nav-menu .btn{
+        grid-column:1 / -1;
+        width:100%;
+        margin-left:0;
+    }
+    .hero{
+        padding:28px 18px 32px;
+        gap:20px;
+        border-radius:18px;
+    }
     .features{
         grid-template-columns:1fr;
     }
@@ -515,6 +592,33 @@ footer{
     .hero-image img{
         max-width:320px;
         width:100%;
+    }
+    .hero-actions{
+        width:100%;
+        flex-direction:column;
+    }
+    .hero-actions .btn{
+        width:100%;
+        min-width:unset;
+    }
+    section{
+        margin-top:56px;
+    }
+    section > p{
+        font-size:15px;
+        margin-bottom:24px;
+    }
+    .card.feature{
+        padding:22px 18px;
+        min-height:unset;
+    }
+    footer{
+        margin-top:44px;
+        padding-bottom:42px;
+    }
+    .admin-login-link{
+        bottom:2px;
+        right:2px;
     }
 }
 </style>
@@ -529,7 +633,8 @@ footer{
         <div class="logo-icon">🐾</div>
         <div class="logo-text">PawMedic</div>
     </div>
-    <div class="nav-menu">
+    <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">☰</button>
+    <div class="nav-menu" id="navMenu">
         <a href="#fitur">Fitur</a>
         <a href="#cara">Cara Kerja</a>
         <a href="{{ route('ulasan') }}">Ulasan</a>
@@ -647,6 +752,15 @@ footer{
 function scrollToSection(id){
     document.getElementById(id).scrollIntoView({
         behavior:'smooth'
+    });
+}
+
+const menuToggle = document.getElementById('menuToggle');
+const navMenu = document.getElementById('navMenu');
+if (menuToggle && navMenu) {
+    menuToggle.addEventListener('click', () => {
+        navMenu.classList.toggle('open');
+        menuToggle.textContent = navMenu.classList.contains('open') ? '✕' : '☰';
     });
 }
 </script>

@@ -203,6 +203,17 @@ body::before{
     font-weight:600;
 }
 
+.disease-explanation{
+    margin-top:14px;
+    background:#fff;
+    border:1px solid #d1fae5;
+    border-radius:12px;
+    padding:14px 16px;
+    color:#0f5132;
+    font-size:14px;
+    line-height:1.7;
+}
+
 /* ===== GEJALA LIST ===== */
 .gejala-list-section{
     margin-bottom:32px;
@@ -325,6 +336,32 @@ body::before{
 .warning-text{
     color:var(--text-dark);
     line-height:1.7;
+}
+
+.history-section{
+    margin-bottom:32px;
+}
+
+.history-table{
+    width:100%;
+    border-collapse:collapse;
+    background:#fff;
+    border:1px solid #d1fae5;
+    border-radius:12px;
+    overflow:hidden;
+}
+
+.history-table th,
+.history-table td{
+    padding:10px 12px;
+    border-bottom:1px solid #e2e8f0;
+    text-align:left;
+    font-size:14px;
+}
+
+.history-table th{
+    background:#f0fdf4;
+    color:#0f5132;
 }
 
 /* ===== BUTTONS ===== */
@@ -450,6 +487,12 @@ body::before{
 <div class="diagnosis-category">
 Jenis: {{ $diagnosis['kategori'] ?? '-' }}
 </div>
+@if(!empty($diseaseDescription))
+<div class="disease-explanation">
+    <strong>Penjelasan penyakit:</strong><br>
+    {{ $diseaseDescription }}
+</div>
+@endif
 
 
         <!-- Gejala yang Dipilih -->
@@ -516,13 +559,85 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
     </div>
 </div>
 
+@if(isset($diagnosisHistory) && $diagnosisHistory->count() > 0)
+<div class="result-card history-section">
+    <div class="section-title">
+        <span>🕘 Riwayat Diagnosis (Nomor yang sama)</span>
+    </div>
+    <table class="history-table">
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>Nama Kucing</th>
+                <th>Hasil Diagnosis</th>
+            </tr>
+        </thead>
+        <tbody>
+        @foreach($diagnosisHistory as $row)
+            <tr>
+                <td>{{ \Carbon\Carbon::parse($row->created_at)->format('d M Y H:i') }}</td>
+                <td>{{ $row->nama_kucing ?? '-' }}</td>
+                <td>{{ $row->hasil_diagnosis ?? '-' }}</td>
+            </tr>
+        @endforeach
+        </tbody>
+    </table>
+</div>
+@endif
+
 @include('components.scroll-top')
 
 <script>
 
 // Print function
 function printDiagnosis() {
-    window.print();
+    const diagnosis = @json($diagnosis);
+    const gejala = @json(session('gejala', []));
+    const penjelasan = @json($diseaseDescription ?? '');
+    const html = `
+    <html>
+    <head>
+        <meta charset="utf-8">
+        <title>Cetak Hasil Diagnosis</title>
+        <style>
+            body{font-family:Arial,sans-serif;padding:24px;color:#111;line-height:1.5}
+            h1{font-size:22px;margin-bottom:6px}
+            .muted{color:#666;font-size:13px;margin-bottom:18px}
+            .box{border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:12px}
+            ul{margin:8px 0 0 18px}
+        </style>
+    </head>
+    <body>
+        <h1>Hasil Diagnosis PawMedic</h1>
+        <div class="muted">Dicetak pada: ${new Date().toLocaleString('id-ID')}</div>
+        <div class="box">
+            <strong>Penyakit:</strong> ${diagnosis.nama || '-'}<br>
+            <strong>Jenis:</strong> ${diagnosis.kategori || '-'}
+            ${penjelasan ? `<br><strong>Penjelasan:</strong> ${penjelasan}` : ''}
+        </div>
+        <div class="box">
+            <strong>Gejala Dipilih:</strong>
+            <ul>${(gejala || []).map(g => `<li>${g}</li>`).join('') || '<li>-</li>'}</ul>
+        </div>
+        <div class="box">
+            <strong>Pertolongan:</strong>
+            <ul>${(diagnosis.pertolongan || []).map(p => `<li>${p}</li>`).join('') || '<li>-</li>'}</ul>
+        </div>
+        <div class="box">
+            <strong>Pencegahan:</strong>
+            <ul>${(diagnosis.pencegahan || []).map(p => `<li>${p}</li>`).join('') || '<li>-</li>'}</ul>
+        </div>
+    </body>
+    </html>`;
+
+    const w = window.open('', '_blank');
+    if (!w) return;
+    w.document.open();
+    w.document.write(html);
+    w.document.close();
+    w.focus();
+    w.print();
+    w.close();
 }
 
 // Share function

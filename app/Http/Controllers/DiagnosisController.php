@@ -71,7 +71,29 @@ $biodataId = session('biodata_id');
     // 🔥 halaman hasil
     public function hasil()
     {
-        return view('hasil-diagnosis');
+        $diagnosis = session('diagnosis', []);
+        $diseaseName = trim((string)($diagnosis['nama'] ?? ''));
+        $description = $this->getDiseaseDescription($diseaseName);
+        $history = collect();
+
+        $biodataId = session('biodata_id');
+        if ($biodataId) {
+            $current = Biodata::find($biodataId);
+            $phone = trim((string)($current->no_telepon ?? ''));
+            if ($phone !== '') {
+                $history = Biodata::query()
+                    ->where('no_telepon', $phone)
+                    ->whereNotNull('hasil_diagnosis')
+                    ->orderByDesc('created_at')
+                    ->take(10)
+                    ->get(['nama_kucing', 'hasil_diagnosis', 'created_at']);
+            }
+        }
+
+        return view('hasil-diagnosis', [
+            'diseaseDescription' => $description,
+            'diagnosisHistory' => $history,
+        ]);
     }
 
     public function simpanBiodata(Request $request)
@@ -98,5 +120,30 @@ $biodataId = session('biodata_id');
         session(['biodata_id' => $data->id]);
     
         return redirect()->route('gejala');
+    }
+
+    private function getDiseaseDescription(string $diseaseName): string
+    {
+        if ($diseaseName === '') {
+            return '';
+        }
+
+        $path = storage_path('app/disease_explanations.json');
+        if (!file_exists($path)) {
+            return '';
+        }
+
+        $decoded = json_decode((string)file_get_contents($path), true);
+        if (!is_array($decoded)) {
+            return '';
+        }
+
+        foreach ($decoded as $name => $description) {
+            if (trim((string)$name) === $diseaseName) {
+                return trim((string)$description);
+            }
+        }
+
+        return '';
     }
 }

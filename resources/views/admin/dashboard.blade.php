@@ -140,6 +140,24 @@ body{
     letter-spacing:-0.02em;
 }
 
+.admin-shortcuts{
+    display:flex;
+    gap:10px;
+    flex-wrap:wrap;
+    margin-bottom:22px;
+}
+
+.admin-shortcut{
+    text-decoration:none;
+    padding:9px 14px;
+    border-radius:999px;
+    border:1px solid rgba(111,207,151,0.35);
+    background:#fff;
+    color:var(--text-dark);
+    font-weight:600;
+    font-size:13px;
+}
+
 /* ===== STATS GRID ===== */
 .stats-grid {
     display: grid;
@@ -236,6 +254,41 @@ body{
     display:flex;
     align-items:center;
     gap:12px;
+}
+
+.table-wrap{
+    width:100%;
+    max-height:420px;
+    overflow:auto;
+    border:1px solid #e2e8f0;
+    border-radius:14px;
+}
+
+.table-controls{
+    display:flex;
+    gap:10px;
+    margin-bottom:12px;
+    flex-wrap:wrap;
+}
+
+.form-control{
+    padding:10px 12px;
+    border:1px solid #cbd5e1;
+    border-radius:10px;
+    background:#fff;
+    font-size:14px;
+    min-width:180px;
+}
+
+.btn-export{
+    padding:10px 14px;
+    border-radius:10px;
+    border:1px solid var(--primary);
+    background:var(--primary-light);
+    color:var(--text-dark);
+    text-decoration:none;
+    font-weight:600;
+    font-size:14px;
 }
 
 .table{
@@ -342,6 +395,12 @@ body{
 <!-- MAIN CONTENT -->
 <div class="container">
     <h1 class="page-title">Dashboard Admin</h1>
+    <div class="admin-shortcuts">
+        <a href="#" class="admin-shortcut" onclick="toggleDiagnosis(); return false;">📋 Data Diagnosis</a>
+        <a href="#" class="admin-shortcut" onclick="toggleUsers(); return false;">👥 Data Pengguna</a>
+        <a href="#" class="admin-shortcut" onclick="toggleChart(); return false;">📊 Statistik</a>
+        <a href="{{ route('admin.disease.settings') }}" class="admin-shortcut">🧾 Pengaturan Penyakit</a>
+    </div>
 
     <!-- Statistics -->
     <div class="stats-grid">
@@ -443,45 +502,44 @@ body{
     <div class="data-section">
         <div class="section-title">📋 Data Diagnosis</div>
 
-        <div style="display:flex; gap:10px; margin-bottom:10px; flex-wrap:wrap;">
-
-        <input type="text" id="searchDiagnosis" 
-                   class="form-control" 
-                   placeholder="🔍 Cari..." style="max-width:200px;">
-
-                   <select id="filterDiagnosis" class="form-control" style="max-width:200px;">
+        <div class="table-controls">
+            <input type="text" id="searchDiagnosis" class="form-control" placeholder="🔍 Cari data diagnosis...">
+            <select id="filterDiagnosis" class="form-control">
                 <option value="">Semua Penyakit</option>
                 @foreach($data->pluck('hasil_diagnosis')->unique() as $penyakit)
                     <option value="{{ strtolower($penyakit) }}">{{ $penyakit }}</option>
                 @endforeach
             </select>
+            <select id="sortDiagnosis" class="form-control">
+                <option value="latest">Terbaru</option>
+                <option value="oldest">Terlama</option>
+                <option value="name_asc">Nama Pemilik A-Z</option>
+                <option value="name_desc">Nama Pemilik Z-A</option>
+            </select>
+            <a href="{{ route('admin.export.diagnosis') }}" class="btn-export">⬇ Export Excel</a>
+        </div>
 
-            <form method="GET">
-            <select id="sortDiagnosis">
-            <option value="latest">Terbaru</option>
-            <option value="oldest">Terlama</option>
-        </select>
-</form>
-
-            </div>
-
-            <div style="max-height:400px; overflow-y:auto;">
+            <div class="table-wrap">
             <table class="table">
             <thead>
                 <tr>
                     <th>Nama Pemilik</th>
                     <th>Nama Kucing</th>
+                    <th>Umur Kucing</th>
+                    <th>Jenis Kelamin</th>
                     <th>Penyakit</th>
                     <th>Tanggal</th>
                 </tr>
             </thead>
             <tbody id="diagnosisTable">
-                @foreach($data as $user)
-                <tr data-date="{{ $user->created_at }}">
-                    <td>{{ $user->nama_pemilik }}</td>
-                    <td>{{ $user->nama_kucing }}</td>
-                    <td>{{ $user->hasil_diagnosis ?? '-' }}</td>
-                    <td>{{ \Carbon\Carbon::parse($user->created_at)->format('d M Y') }}</td>
+                @foreach($data as $item)
+                <tr data-date="{{ $item->created_at }}" data-name="{{ strtolower($item->nama_pemilik ?? '') }}" data-disease="{{ strtolower($item->hasil_diagnosis ?? '') }}">
+                    <td>{{ $item->nama_pemilik }}</td>
+                    <td>{{ $item->nama_kucing }}</td>
+                    <td>{{ $item->umur_kucing ?? '-' }}</td>
+                    <td>{{ $item->jenis_kelamin ?? '-' }}</td>
+                    <td>{{ $item->hasil_diagnosis ?? '-' }}</td>
+                    <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}</td>
                 </tr>
                 @endforeach
             </tbody>
@@ -493,26 +551,39 @@ body{
 <div id="userBox" style="display:none; margin-top:20px;">
     <div class="data-section">
         <div class="section-title">👥 Data Pengguna</div>
+        <div class="table-controls">
+            <input type="text" id="searchUser" class="form-control" placeholder="🔍 Cari pengguna...">
+            <select id="sortUser" class="form-control">
+                <option value="latest">Terbaru</option>
+                <option value="oldest">Terlama</option>
+                <option value="name_asc">Nama Pemilik A-Z</option>
+                <option value="name_desc">Nama Pemilik Z-A</option>
+            </select>
+        </div>
+        <div class="table-wrap">
         <table class="table">
             <thead>
                 <tr>
+                    <th>Tanggal</th>
                     <th>Nama Pemilik</th>
                     <th>No Telepon</th>
                     <th>Alamat</th>
                     <th>Nama Kucing</th>
                 </tr>
             </thead>
-            <tbody>
-                @foreach($data ?? [] as $user)
-                <tr>
-                    <td>{{ $user->nama_pemilik }}</td>
-                    <td>{{ $user->no_telepon }}</td>
-                    <td>{{ $user->alamat ?? 'Tidak tersedia'}}</td>
-                    <td>{{ $user->nama_kucing }}</td>
+            <tbody id="userTable">
+                @foreach(($userData ?? collect()) as $item)
+                <tr data-date="{{ $item->created_at }}" data-name="{{ strtolower($item->nama_pemilik ?? '') }}">
+                    <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}</td>
+                    <td>{{ $item->nama_pemilik }}</td>
+                    <td>{{ $item->no_telepon }}</td>
+                    <td>{{ $item->alamat ?? 'Tidak tersedia'}}</td>
+                    <td>{{ $item->nama_kucing }}</td>
                 </tr>
                 @endforeach
             </tbody>
         </table>
+        </div>
     </div>
 </div>
 
@@ -560,6 +631,12 @@ body{
             <a href="{{ route('faq') }}" style="padding:12px 24px; background:white; border:2px solid var(--primary); color:var(--primary-dark); text-decoration:none; border-radius:12px; font-weight:600; transition:all 0.3s ease;">
                 ❓ Lihat FAQ
             </a>
+            <a href="{{ route('admin.faq.settings') }}" style="padding:12px 24px; background:white; border:2px solid var(--primary); color:var(--primary-dark); text-decoration:none; border-radius:12px; font-weight:600; transition:all 0.3s ease;">
+                🛠️ Kelola FAQ
+            </a>
+            <a href="{{ route('admin.disease.settings') }}" style="padding:12px 24px; background:white; border:2px solid var(--primary); color:var(--primary-dark); text-decoration:none; border-radius:12px; font-weight:600; transition:all 0.3s ease;">
+                🧾 Atur Penjelasan Penyakit
+            </a>
         </div>
     </div>
 </div>
@@ -567,236 +644,186 @@ body{
 @include('components.scroll-top')
 
 <script>
-    let currentPage = 1;
-const rowsPerPage = 20;
-let allRows = [];
+const diagnosisBox = document.getElementById('diagnosisBox');
+const userBox = document.getElementById('userBox');
+const chartBox = document.getElementById('chartBox');
 
+const diagnosisTableBody = document.getElementById('diagnosisTable');
+const diagnosisRows = Array.from(diagnosisTableBody.querySelectorAll('tr'));
 
-// SEARCH + FILTER + SORT
-function applyFilters() {
-    let search = document.getElementById("searchDiagnosis").value.toLowerCase();
-    let filter = document.getElementById("filterDiagnosis").value;
+const userTableBody = document.getElementById('userTable');
+const userRows = Array.from(userTableBody.querySelectorAll('tr'));
 
-    let rows = Array.from(document.querySelectorAll("#diagnosisTable tr"));
+function sortRows(rows, sortType, nameAttr = 'data-name') {
+    const cloned = [...rows];
+    cloned.sort((a, b) => {
+        if (sortType === 'oldest') {
+            return new Date(a.getAttribute('data-date')) - new Date(b.getAttribute('data-date'));
+        }
+        if (sortType === 'name_asc') {
+            return (a.getAttribute(nameAttr) || '').localeCompare((b.getAttribute(nameAttr) || ''));
+        }
+        if (sortType === 'name_desc') {
+            return (b.getAttribute(nameAttr) || '').localeCompare((a.getAttribute(nameAttr) || ''));
+        }
+        return new Date(b.getAttribute('data-date')) - new Date(a.getAttribute('data-date'));
+    });
+    return cloned;
+}
 
-    let filtered = rows.filter(row => {
-        let text = row.innerText.toLowerCase();
-        let penyakit = row.children[2].innerText.toLowerCase();
+function applyDiagnosisFilters() {
+    const search = (document.getElementById('searchDiagnosis').value || '').toLowerCase();
+    const diseaseFilter = document.getElementById('filterDiagnosis').value;
+    const sort = document.getElementById('sortDiagnosis').value;
 
-        return text.includes(search) &&
-               (filter === "" || penyakit === filter);
+    const filtered = diagnosisRows.filter((row) => {
+        const text = row.innerText.toLowerCase();
+        const disease = row.getAttribute('data-disease') || '';
+        return text.includes(search) && (diseaseFilter === '' || disease === diseaseFilter);
     });
 
-    // SEMUA DIHIDE DULU
-    rows.forEach(row => row.style.display = "none");
-
-    // TAMPILKAN HASIL
-    filtered.forEach(row => row.style.display = "");
-}
-// TAMPILKAN DATA
-function displayRows(rows) {
-    let start = (currentPage - 1) * rowsPerPage;
-    let end = start + rowsPerPage;
-
-    let visible = rows.slice(start, end);
-
-    document.getElementById("tableBody").innerHTML = "";
-
-    visible.forEach(row => {
-        document.getElementById("tableBody").appendChild(row);
-    });
-
-    document.getElementById("pageInfo").innerText =
-        `Page ${currentPage}`;
+    const sorted = sortRows(filtered, sort);
+    diagnosisTableBody.innerHTML = '';
+    sorted.forEach((row) => diagnosisTableBody.appendChild(row));
 }
 
-// PAGINATION
-function nextPage() {
-    currentPage++;
-    applyFilters();
+function applyUserFilters() {
+    const search = (document.getElementById('searchUser').value || '').toLowerCase();
+    const sort = document.getElementById('sortUser').value;
+
+    const filtered = userRows.filter((row) => row.innerText.toLowerCase().includes(search));
+    const sorted = sortRows(filtered, sort);
+
+    userTableBody.innerHTML = '';
+    sorted.forEach((row) => userTableBody.appendChild(row));
 }
 
-function prevPage() {
-    if (currentPage > 1) {
-        currentPage--;
-        applyFilters();
+function toggleChart() {
+    const isHidden = window.getComputedStyle(chartBox).display === 'none';
+    if (isHidden) {
+        chartBox.style.display = 'block';
+        chartBox.scrollIntoView({ behavior: 'smooth' });
+        loadMainChart();
+        loadRatingChart();
+    } else {
+        chartBox.style.display = 'none';
     }
 }
-</script>
 
+function toggleUsers() {
+    chartBox.style.display = 'none';
+    const hidden = window.getComputedStyle(userBox).display === 'none';
+    userBox.style.display = hidden ? 'block' : 'none';
+    if (hidden) userBox.scrollIntoView({ behavior: 'smooth' });
+}
+
+function toggleDiagnosis() {
+    chartBox.style.display = 'none';
+    userBox.style.display = 'none';
+    const hidden = window.getComputedStyle(diagnosisBox).display === 'none';
+    diagnosisBox.style.display = hidden ? 'block' : 'none';
+    if (hidden) diagnosisBox.scrollIntoView({ behavior: 'smooth' });
+}
+</script>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/chartjs-plugin-datalabels"></script>
-
 <script>
-window.onload = function () {
-    allRows = Array.from(document.querySelectorAll("#tableBody tr"));
-    applyFilters();
+let diseaseChart = null;
+let ratingChart = null;
 
-    document.getElementById("searchDiagnosis").addEventListener("keyup", () => {
-        currentPage = 1;
-        applyFilters();
+function loadMainChart() {
+    if (diseaseChart) return;
+    const ctx = document.getElementById('chartPenyakit');
+    diseaseChart = new Chart(ctx, {
+        type: 'bar',
+        data: {
+            labels: {!! json_encode($stats['chart_labels']) !!},
+            datasets: [{
+                label: 'Jumlah Kasus',
+                data: {!! json_encode($stats['chart_data']) !!},
+                backgroundColor: '#6fcf97',
+                borderColor: '#4bb66f',
+                borderWidth: 1.5,
+                borderRadius: 8
+            }]
+        },
+        options: {
+            responsive: true,
+            plugins: {
+                legend: { display: false },
+                tooltip: { mode: 'index', intersect: false }
+            },
+            scales: {
+                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#e5e7eb' } },
+                x: { grid: { display: false } }
+            }
+        }
     });
+}
 
-    document.getElementById("filterDiagnosis").addEventListener("change", () => {
-        currentPage = 1;
-        applyFilters();
-    });
-
-    document.getElementById("sortDiagnosis").addEventListener("change", () => {
-        currentPage = 1;
-        applyFilters();
-    });
-};
-    const ctx2 = document.getElementById('chartHarian');
-
-new Chart(ctx2, {
+new Chart(document.getElementById('chartHarian'), {
     type: 'line',
     data: {
         labels: {!! json_encode($stats['daily_labels']) !!},
         datasets: [{
             label: 'Jumlah Diagnosis',
             data: {!! json_encode($stats['daily_data']) !!},
-            tension: 0.4,
-            fill: false,
+            tension: 0.35,
+            fill: true,
+            backgroundColor: 'rgba(111, 207, 151, 0.2)',
+            borderColor: '#4bb66f',
             borderWidth: 3,
-            pointRadius: 5
-        }]
-    }
-});
-let chart = null;
-
-function toggleChart() {
-    const chartBox = document.getElementById('chartBox');
-
-    const isHidden = window.getComputedStyle(chartBox).display === "none";
-
-    if (isHidden) {
-        chartBox.style.display = "block";
-
-        chartBox.scrollIntoView({ behavior: 'smooth' });
-
-        if (!chart) {
-            const ctx = document.getElementById('chartPenyakit');
-
-            chart = new Chart(ctx, {
-                type: 'bar',
-                data: {
-                    labels: {!! json_encode($stats['chart_labels']) !!},
-                    datasets: [{
-                        label: 'Jumlah Kasus',
-                        data: {!! json_encode($stats['chart_data']) !!}
-                    }]
-                },
-                options: {
-                    plugins: {
-                        legend: { display: false }
-                    }
-                }
-            });
-        }
-
-        loadRatingChart();
-
-    } else {
-        chartBox.style.display = "none";
-    }
-}
-function toggleUsers() {
-    const userBox = document.getElementById('userBox');
-    const chartBox = document.getElementById('chartBox');
-
-    chartBox.style.display = "none"; // tutup chart
-
-    if (userBox.style.display === "none") {
-        userBox.style.display = "block";
-        userBox.scrollIntoView({ behavior: 'smooth' });
-    } else {
-        userBox.style.display = "none";
-    }
-}
-function toggleDiagnosis() {
-    const diagnosisBox = document.getElementById('diagnosisBox');
-    const chartBox = document.getElementById('chartBox');
-    const userBox = document.getElementById('userBox');
-
-    // tutup yang lain biar rapi
-    chartBox.style.display = "none";
-    userBox.style.display = "none";
-
-    if (diagnosisBox.style.display === "none") {
-        diagnosisBox.style.display = "block";
-        diagnosisBox.scrollIntoView({ behavior: 'smooth' });
-    } else {
-        diagnosisBox.style.display = "none";
-    }
-}
-let ratingChart = null;
-
-function loadRatingChart() {
-    if (ratingChart) return;
-
-    const ctx = document.getElementById('chartRating');
-
-    ratingChart = new Chart(ctx, {
-    type: 'pie',
-    data: {
-        labels: {!! json_encode($stats['rating_labels']) !!}.map(r => 'Bintang ' + r),
-        datasets: [{
-            data: {!! json_encode($stats['rating_data']) !!}
+            pointRadius: 4,
+            pointBackgroundColor: '#4bb66f'
         }]
     },
     options: {
-        plugins: {
-            datalabels: {
-                color: '#fff',
-                formatter: (value, context) => {
-                    let total = context.dataset.data.reduce((a, b) => a + b, 0);
-                    let percent = (value / total * 100).toFixed(1);
-                    return percent + '%';
-                },
-                font: {
-                    weight: 'bold'
-                }
-            },
-            legend: {
-                position: 'bottom'
-            }
+        responsive: true,
+        plugins: { legend: { display: true } },
+        scales: {
+            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#e5e7eb' } },
+            x: { grid: { display: false } }
         }
-    },
-    plugins: [ChartDataLabels]
-});}
-</script>
-<script>
-document.getElementById('sortDiagnosis').addEventListener('change', function() {
-    let sort = this.value;
-    let table = document.getElementById('diagnosisTable');
-
-    // loading dulu
-    table.innerHTML = "<tr><td colspan='4'>Loading...</td></tr>";
-
-    fetch(`/admin/sort-diagnosis?sort=${sort}`)
-        .then(response => response.json())
-        .then(data => {
-
-            table.innerHTML = '';
-
-            data.forEach(item => {
-                table.innerHTML += `
-                    <tr>
-                        <td>${item.nama_pemilik}</td>
-                        <td>${item.nama_kucing}</td>
-                        <td>${item.hasil_diagnosis ?? '-'}</td>
-                        <td>${new Date(item.created_at).toLocaleDateString()}</td>
-                    </tr>
-                `;
-            });
-
-        })
-        .catch(error => {
-            table.innerHTML = "<tr><td colspan='4'>Error load data</td></tr>";
-            console.error(error);
-        });
+    }
 });
+
+function loadRatingChart() {
+    if (ratingChart) return;
+    ratingChart = new Chart(document.getElementById('chartRating'), {
+        type: 'pie',
+        data: {
+            labels: {!! json_encode($stats['rating_labels']) !!}.map(r => 'Bintang ' + r),
+            datasets: [{
+                data: {!! json_encode($stats['rating_data']) !!},
+                backgroundColor: ['#22c55e', '#84cc16', '#f59e0b', '#f97316', '#ef4444']
+            }]
+        },
+        options: {
+            plugins: {
+                datalabels: {
+                    color: '#fff',
+                    formatter: (value, context) => {
+                        const total = context.dataset.data.reduce((a, b) => a + b, 0);
+                        if (!total) return '0%';
+                        return ((value / total) * 100).toFixed(1) + '%';
+                    },
+                    font: { weight: 'bold' }
+                },
+                legend: { position: 'bottom' }
+            }
+        },
+        plugins: [ChartDataLabels]
+    });
+}
+
+document.getElementById('searchDiagnosis').addEventListener('input', applyDiagnosisFilters);
+document.getElementById('filterDiagnosis').addEventListener('change', applyDiagnosisFilters);
+document.getElementById('sortDiagnosis').addEventListener('change', applyDiagnosisFilters);
+document.getElementById('searchUser').addEventListener('input', applyUserFilters);
+document.getElementById('sortUser').addEventListener('change', applyUserFilters);
+
+applyDiagnosisFilters();
+applyUserFilters();
 </script>
 </body>
 </html>

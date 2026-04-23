@@ -8,6 +8,21 @@ use App\Http\Controllers\UlasanController;
 use App\Models\Ulasan;
 
 Route::get('/admin/sort-diagnosis', [AdminController::class, 'sortDiagnosis']);
+Route::get('/admin/export-diagnosis', [AdminController::class, 'exportDiagnosisExcel'])
+    ->name('admin.export.diagnosis')
+    ->middleware('auth');
+Route::get('/admin/disease-settings', [AdminController::class, 'diseaseSettings'])
+    ->name('admin.disease.settings')
+    ->middleware('auth');
+Route::post('/admin/disease-settings', [AdminController::class, 'saveDiseaseSettings'])
+    ->name('admin.disease.settings.save')
+    ->middleware('auth');
+Route::get('/admin/faq-settings', [AdminController::class, 'faqSettings'])
+    ->name('admin.faq.settings')
+    ->middleware('auth');
+Route::post('/admin/faq-settings', [AdminController::class, 'saveFaqSettings'])
+    ->name('admin.faq.settings.save')
+    ->middleware('auth');
 
 Route::delete('/ulasan/{id}', [UlasanController::class, 'destroy'])->name('ulasan.delete');
 
@@ -36,9 +51,7 @@ Route::post('/diagnosis/proses', [DiagnosisController::class, 'prosesDiagnosis']
 
 Route::get('/hasil-diagnosis', [DiagnosisController::class, 'hasil'])->name('hasil-diagnosis');
 
-Route::get('/faq', function () {
-    return view('faq');
-})->name('faq');
+Route::get('/faq', [AdminController::class, 'faqPage'])->name('faq');
 
 // Admin Routes
 Route::get('/admin/login', [AdminController::class, 'login'])->name('admin.login');
