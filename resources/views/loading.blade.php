@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Memproses Diagnosis - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
 <style>
 :root{
@@ -61,6 +63,7 @@ body{
     align-items:center;
     justify-content:center;
     font-size:28px;
+    color:#fff;
     box-shadow:0 8px 24px rgba(111,207,151,0.3);
     animation:logoFloat 3s ease-in-out infinite;
 }
@@ -89,6 +92,61 @@ body{
     max-width:500px;
     margin:0 auto;
     animation:fadeUp 0.8s ease;
+}
+
+.loading-card::before{
+    content:'';
+    position:absolute;
+    inset:0;
+    background:linear-gradient(120deg, transparent 25%, rgba(255,255,255,0.38) 50%, transparent 75%);
+    transform:translateX(-120%);
+    animation:cardShine 2.2s ease-in-out infinite;
+    pointer-events:none;
+}
+
+@keyframes cardShine{
+    0%{transform:translateX(-120%);}
+    100%{transform:translateX(120%);}
+}
+
+.bootstrap-loader{
+    width:80px;
+    height:80px;
+    margin:0 auto 22px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+}
+
+.bootstrap-loader .spinner-border{
+    width:3.5rem;
+    height:3.5rem;
+    border:0.35em solid #d1fae5;
+    border-right-color:#4bb66f;
+    border-top-color:#6fcf97;
+    border-radius:50%;
+    animation:spin 0.8s linear infinite;
+}
+
+.progress-wrap{
+    margin-top:18px;
+    margin-bottom:10px;
+}
+
+.progress-track{
+    width:100%;
+    height:8px;
+    background:#e2f6ea;
+    border-radius:999px;
+    overflow:hidden;
+}
+
+.progress-bar{
+    width:0%;
+    height:100%;
+    background:linear-gradient(90deg,#6fcf97,#4bb66f);
+    border-radius:999px;
+    transition:width 0.45s ease;
 }
 
 h1{
@@ -174,6 +232,13 @@ p{
     animation:pulse 2s ease infinite;
 }
 
+.progress-label{
+    margin-top:8px;
+    font-size:13px;
+    color:#4b5563;
+    font-weight:600;
+}
+
 @keyframes pulse{
     0%, 100%{opacity:1;}
     50%{opacity:0.6;}
@@ -247,6 +312,18 @@ p{
         opacity:0;
     }
 }
+
+@media (max-width:576px) and (orientation:portrait){
+    .container{padding:14px 10px;}
+    .logo{margin-bottom:14px;}
+    .logo-icon{width:38px;height:38px;}
+    .logo-text{font-size:18px;}
+    .loading-card{padding:18px 14px;border-radius:14px;}
+    h1{font-size:1.35rem;margin-bottom:10px;}
+    p{font-size:14px;margin-bottom:16px;}
+    .bootstrap-loader .spinner-border{width:2.6rem;height:2.6rem;}
+    .status-text,.progress-label{font-size:13px;}
+}
 </style>
 </head>
 
@@ -265,7 +342,14 @@ p{
 
 <div class="container">
     <div class="logo">
-        <div class="logo-icon">🐾</div>
+        <div class="logo-icon" aria-hidden="true">
+            <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor">
+                <circle cx="6" cy="8" r="2.2"></circle>
+                <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                <circle cx="15.8" cy="8" r="2.2"></circle>
+                <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+            </svg>
+        </div>
         <div class="logo-text">PawMedic</div>
     </div>
     
@@ -273,8 +357,8 @@ p{
         <h1>Memproses Diagnosis</h1>
         <p>Sedang menganalisis gejala yang Anda pilih...</p>
         
-        <div class="loader">
-            <div class="loader-circle"></div>
+        <div class="bootstrap-loader">
+            <div class="spinner-border" role="status" aria-label="Loading"></div>
         </div>
         
         <div class="loading-dots">
@@ -283,6 +367,12 @@ p{
             <div class="dot"></div>
         </div>
         
+        <div class="progress-wrap">
+            <div class="progress-track">
+                <div class="progress-bar" id="progressBar"></div>
+            </div>
+        </div>
+        <div class="progress-label" id="progressLabel">0%</div>
         <div class="status-text" id="statusText">Menganalisis data gejala...</div>
     </div>
 </div>
@@ -298,44 +388,68 @@ const statusMessages = [
 
 let currentStatus = 0;
 const statusText = document.getElementById('statusText');
+const progressBar = document.getElementById('progressBar');
+const progressLabel = document.getElementById('progressLabel');
+let progress = 0;
 
-// Update status message
+// status text
 setInterval(() => {
     currentStatus = (currentStatus + 1) % statusMessages.length;
     statusText.textContent = statusMessages[currentStatus];
 }, 2000);
 
-// Get gejala from URL
-const urlParams = new URLSearchParams(window.location.search);
-const gejalaParam = urlParams.get('gejala');
-
-// Simulate processing and redirect
-setTimeout(() => {
-    if (gejalaParam) {
-        // Submit form to process diagnosis
-        const form = document.createElement('form');
-        form.method = 'POST';
-        form.action = '{{ route("diagnosis.proses") }}';
-        
-        const csrf = document.createElement('input');
-        csrf.type = 'hidden';
-        csrf.name = '_token';
-        csrf.value = '{{ csrf_token() }}';
-        form.appendChild(csrf);
-        
-        const gejalaInput = document.createElement('input');
-        gejalaInput.type = 'hidden';
-        gejalaInput.name = 'gejala';
-        gejalaInput.value = gejalaParam;
-        form.appendChild(gejalaInput);
-        
-        document.body.appendChild(form);
-        form.submit();
-    } else {
-        // Fallback: redirect to hasil
-        window.location.href = '/hasil-diagnosis';
+// progress animation
+const progressTimer = setInterval(() => {
+    if (progress < 92) {
+        progress += Math.random() * 4;
+    } else if (progress < 97) {
+        progress += Math.random() * 1.2;
     }
-}, 3000);
+
+    progress = Math.min(progress, 97);
+    const rounded = Math.floor(progress);
+    progressBar.style.width = rounded + '%';
+    progressLabel.textContent = rounded + '%';
+}, 220);
+
+// 🔥 AMBIL DATA DARI LOCAL STORAGE
+const gejala = JSON.parse(localStorage.getItem('gejala'));
+
+// VALIDASI
+if (!gejala || gejala.length === 0) {
+    window.location.href = '/cek-penyakit';
+}
+
+// KIRIM KE LARAVEL
+const form = document.createElement('form');
+form.method = 'POST';
+form.action = '/diagnosis/proses';
+
+// CSRF
+let csrf = document.createElement('input');
+csrf.type = 'hidden';
+csrf.name = '_token';
+csrf.value = '{{ csrf_token() }}';
+form.appendChild(csrf);
+
+// DATA GEJALA
+gejala.forEach(g => {
+    let input = document.createElement('input');
+    input.type = 'hidden';
+    input.name = 'gejala[]';
+    input.value = g;
+    form.appendChild(input);
+});
+
+document.body.appendChild(form);
+
+// SUBMIT SETELAH LOADING
+setTimeout(() => {
+    progressBar.style.width = '100%';
+    progressLabel.textContent = '100%';
+    clearInterval(progressTimer);
+    form.submit();
+}, 4600);
 </script>
 
 </body>

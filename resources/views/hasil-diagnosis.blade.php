@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Hasil Diagnosis - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 @php
 $diagnosis = session('diagnosis')?? [];
 @endphp
@@ -178,6 +180,7 @@ body::before{
     padding:24px;
     border-radius:16px;
     margin-bottom:32px;
+    overflow-wrap:anywhere;
 }
 
 .diagnosis-label{
@@ -212,6 +215,7 @@ body::before{
     color:#0f5132;
     font-size:14px;
     line-height:1.7;
+    overflow-wrap:anywhere;
 }
 
 /* ===== GEJALA LIST ===== */
@@ -448,6 +452,27 @@ body::before{
         width:100%;
     }
 }
+
+@media (max-width:576px) and (orientation:portrait){
+    body{padding:10px;}
+    .container{padding:10px 0;}
+    .header h1{font-size:1.35rem;}
+    .logo-icon{width:38px;height:38px;}
+    .result-card{padding:16px 12px;border-radius:16px;}
+    .result-title{font-size:1.1rem;}
+    .result-subtitle,.diagnosis-description,.diagnosis-list li{font-size:13px;}
+    .diagnosis-result,.recommendation,.warning-box{padding:14px 12px;border-radius:12px;margin-bottom:16px;}
+    .diagnosis-name{font-size:20px;line-height:1.35;}
+    .diagnosis-category{font-size:14px;}
+    .disease-explanation{font-size:13px;line-height:1.65;padding:10px 12px;}
+    .section-title{font-size:18px;margin-bottom:12px;}
+    .gejala-list{gap:8px;}
+    .gejala-badge{font-size:12px;padding:8px 10px;border-radius:12px;}
+    .gejala-badge::before{width:16px;height:16px;font-size:10px;}
+    .action-buttons{gap:10px;margin-top:20px;}
+    .btn{font-size:14px;padding:10px 12px;min-width:unset;}
+    .history-table th,.history-table td{font-size:12px;padding:8px 6px;}
+}
 </style>
 </head>
 
@@ -455,7 +480,14 @@ body::before{
 <div class="container">
     <div class="header">
         <a href="/" class="logo-link">
-            <div class="logo-icon">🐾</div>
+            <div class="logo-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <circle cx="6" cy="8" r="2.2"></circle>
+                    <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                    <circle cx="15.8" cy="8" r="2.2"></circle>
+                    <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+                </svg>
+            </div>
             <div class="logo-text">PawMedic</div>
         </a>
         @php
@@ -472,7 +504,7 @@ body::before{
 
     <div class="result-card">
         <div class="result-header">
-            <div class="result-icon">🩺</div>
+            <div class="result-icon"><i class="bi bi-clipboard2-pulse"></i></div>
             <div class="result-title">Diagnosis Selesai</div>
             <div class="result-subtitle">Berikut adalah hasil analisis gejala kucing Anda</div>
         </div>
@@ -498,7 +530,7 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
         <!-- Gejala yang Dipilih -->
         <div class="gejala-list-section">
             <div class="section-title">
-                <span>🔍 Gejala yang Dipilih</span>
+                <span><i class="bi bi-search"></i> Gejala yang Dipilih</span>
             </div>
             <div class="gejala-list">
 @foreach(session('gejala', []) as $g)
@@ -510,7 +542,7 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
         <!-- Recommendation -->
         <div class="recommendation">
             <div class="recommendation-title">
-                <span>💡 Rekomendasi Perawatan</span>
+                <span><i class="bi bi-lightbulb"></i> Rekomendasi Perawatan</span>
             </div>
             <ul class="recommendation-list">
             @foreach($diagnosis['pertolongan'] ?? [] as $item)
@@ -521,7 +553,7 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
 
         <div class="recommendation">
     <div class="recommendation-title">
-        <span>🛡️ Pencegahan</span>
+        <span><i class="bi bi-shield-check"></i> Pencegahan</span>
     </div>
     <ul class="recommendation-list">
     @foreach($diagnosis['pencegahan'] ?? [] as $item)
@@ -533,7 +565,7 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
         <!-- Warning -->
         <div class="warning-box">
             <div class="warning-title">
-                <span>⚠️ Peringatan Penting</span>
+                <span><i class="bi bi-exclamation-triangle"></i> Peringatan Penting</span>
             </div>
             <div class="warning-text">
                 Hasil diagnosis ini hanya sebagai panduan awal. Untuk diagnosis yang akurat dan penanganan yang tepat, 
@@ -544,16 +576,13 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
         <!-- Action Buttons -->
         <div class="action-buttons">
             <a href="{{ route('gejala') }}" class="btn btn-secondary">
-                ← Diagnosis Lagi
+                <i class="bi bi-arrow-left"></i> Diagnosis Lagi
             </a>
-            <button onclick="printDiagnosis()" class="btn btn-secondary">
-                🖨️ Cetak Hasil
-            </button>
-            <button onclick="shareDiagnosis()" class="btn btn-secondary">
-                📤 Bagikan
-            </button>
+            <a href="{{ route('hasil-diagnosis.pdf') }}" class="btn btn-secondary">
+                <i class="bi bi-download"></i> Download Hasil
+            </a>
             <a href="/" class="btn btn-primary">
-                🏠 Kembali ke Beranda
+                <i class="bi bi-house-door"></i> Kembali ke Beranda
             </a>
         </div>
     </div>
@@ -562,7 +591,7 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
 @if(isset($diagnosisHistory) && $diagnosisHistory->count() > 0)
 <div class="result-card history-section">
     <div class="section-title">
-        <span>🕘 Riwayat Diagnosis (Nomor yang sama)</span>
+        <span><i class="bi bi-clock-history"></i> Riwayat Diagnosis (Nomor yang sama)</span>
     </div>
     <table class="history-table">
         <thead>
@@ -575,7 +604,11 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
         <tbody>
         @foreach($diagnosisHistory as $row)
             <tr>
-                <td>{{ \Carbon\Carbon::parse($row->created_at)->format('d M Y H:i') }}</td>
+                <td>
+                    <span class="rt-time" data-ts="{{ \Carbon\Carbon::parse($row->created_at)->toIso8601String() }}">
+                        {{ \Carbon\Carbon::parse($row->created_at)->format('d M Y H:i') }}
+                    </span>
+                </td>
                 <td>{{ $row->nama_kucing ?? '-' }}</td>
                 <td>{{ $row->hasil_diagnosis ?? '-' }}</td>
             </tr>
@@ -588,76 +621,37 @@ Jenis: {{ $diagnosis['kategori'] ?? '-' }}
 @include('components.scroll-top')
 
 <script>
-
-// Print function
-function printDiagnosis() {
-    const diagnosis = @json($diagnosis);
-    const gejala = @json(session('gejala', []));
-    const penjelasan = @json($diseaseDescription ?? '');
-    const html = `
-    <html>
-    <head>
-        <meta charset="utf-8">
-        <title>Cetak Hasil Diagnosis</title>
-        <style>
-            body{font-family:Arial,sans-serif;padding:24px;color:#111;line-height:1.5}
-            h1{font-size:22px;margin-bottom:6px}
-            .muted{color:#666;font-size:13px;margin-bottom:18px}
-            .box{border:1px solid #ddd;border-radius:8px;padding:12px;margin-bottom:12px}
-            ul{margin:8px 0 0 18px}
-        </style>
-    </head>
-    <body>
-        <h1>Hasil Diagnosis PawMedic</h1>
-        <div class="muted">Dicetak pada: ${new Date().toLocaleString('id-ID')}</div>
-        <div class="box">
-            <strong>Penyakit:</strong> ${diagnosis.nama || '-'}<br>
-            <strong>Jenis:</strong> ${diagnosis.kategori || '-'}
-            ${penjelasan ? `<br><strong>Penjelasan:</strong> ${penjelasan}` : ''}
-        </div>
-        <div class="box">
-            <strong>Gejala Dipilih:</strong>
-            <ul>${(gejala || []).map(g => `<li>${g}</li>`).join('') || '<li>-</li>'}</ul>
-        </div>
-        <div class="box">
-            <strong>Pertolongan:</strong>
-            <ul>${(diagnosis.pertolongan || []).map(p => `<li>${p}</li>`).join('') || '<li>-</li>'}</ul>
-        </div>
-        <div class="box">
-            <strong>Pencegahan:</strong>
-            <ul>${(diagnosis.pencegahan || []).map(p => `<li>${p}</li>`).join('') || '<li>-</li>'}</ul>
-        </div>
-    </body>
-    </html>`;
-
-    const w = window.open('', '_blank');
-    if (!w) return;
-    w.document.open();
-    w.document.write(html);
-    w.document.close();
-    w.focus();
-    w.print();
-    w.close();
+function pad2(n){ return String(n).padStart(2,'0'); }
+function formatAbsolute(d){
+    const months = ['Jan','Feb','Mar','Apr','Mei','Jun','Jul','Agu','Sep','Okt','Nov','Des'];
+    return `${pad2(d.getDate())} ${months[d.getMonth()]} ${d.getFullYear()} ${pad2(d.getHours())}:${pad2(d.getMinutes())}`;
 }
-
-// Share function
-function shareDiagnosis() {
-    const diagnosis = "{{ $diagnosis['nama'] ?? '-' }}";
-    const gejala = @json(session('gejala', []));
-
-    const text = `Hasil Diagnosis PawMedic:\n\nPenyakit: ${diagnosis}\nGejala: ${gejala.join(', ')}\n\nDapatkan diagnosis di: ${window.location.origin}`;
-    
-    if (navigator.share) {
-        navigator.share({
-            title: 'Hasil Diagnosis PawMedic',
-            text: text,
-            url: window.location.href
-        });
-    } else {
-        navigator.clipboard.writeText(text);
-        alert('Hasil diagnosis disalin!');
-    }
+function formatRelative(d){
+    const now = new Date();
+    const diffMs = now - d;
+    const diffSec = Math.floor(diffMs / 1000);
+    if (diffSec < 5) return 'baru saja';
+    if (diffSec < 60) return `${diffSec} detik lalu`;
+    const diffMin = Math.floor(diffSec / 60);
+    if (diffMin < 60) return `${diffMin} menit lalu`;
+    const diffHour = Math.floor(diffMin / 60);
+    if (diffHour < 24) return `${diffHour} jam lalu`;
+    const diffDay = Math.floor(diffHour / 24);
+    if (diffDay < 7) return `${diffDay} hari lalu`;
+    return formatAbsolute(d);
 }
+function updateRealtimeTimes(){
+    document.querySelectorAll('.rt-time').forEach((el) => {
+        const ts = el.getAttribute('data-ts');
+        if (!ts) return;
+        const d = new Date(ts);
+        if (isNaN(d.getTime())) return;
+        el.textContent = formatRelative(d);
+        el.title = formatAbsolute(d);
+    });
+}
+updateRealtimeTimes();
+setInterval(updateRealtimeTimes, 15000);
 </script>
 
 <style>

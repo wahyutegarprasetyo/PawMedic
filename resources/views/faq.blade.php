@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>FAQ - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
 <style>
 :root{
@@ -161,7 +162,7 @@ body::before{
 }
 
 .faq-card.active .faq-question::before{
-    content:'✅';
+    content:'✓';
 }
 
 .back-btn{
@@ -207,6 +208,16 @@ body::before{
         padding:28px 24px;
     }
 }
+
+@media (max-width:576px) and (orientation:portrait){
+    .container{padding:14px;}
+    .header h1{font-size:1.35rem;}
+    .header p{font-size:14px;}
+    .logo-icon{width:38px;height:38px;}
+    .faq-card{padding:16px 12px;border-radius:14px;}
+    .faq-question{font-size:15px;}
+    .faq-answer{font-size:14px;line-height:1.6;}
+}
 </style>
 </head>
 
@@ -218,7 +229,14 @@ body::before{
 
     <div class="header">
         <a href="/" class="logo-link">
-            <div class="logo-icon">🐾</div>
+            <div class="logo-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <circle cx="6" cy="8" r="2.2"></circle>
+                    <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                    <circle cx="15.8" cy="8" r="2.2"></circle>
+                    <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+                </svg>
+            </div>
             <div class="logo-text">PawMedic</div>
         </a>
         <h1>Pertanyaan Umum</h1>

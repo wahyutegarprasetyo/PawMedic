@@ -10,7 +10,12 @@ class UlasanController extends Controller
 {
     public function index()
     {
-        $ulasan = Ulasan::latest()->get();
+        $query = Ulasan::query()->latest();
+        $isAdmin = Auth::check() && Auth::user()->email === 'admin@pawmedic.app';
+        if (!$isAdmin) {
+            $query->where('is_hidden', false);
+        }
+        $ulasan = $query->get();
         // 🔥 TOTAL ULASAN
     $total = $ulasan->count();
     // 🔥 RATING RATA-RATA
@@ -38,6 +43,22 @@ class UlasanController extends Controller
         $ulasan->delete();
     
         return redirect()->back()->with('success', 'Ulasan berhasil dihapus');
+    }
+
+    public function toggleHide($id)
+    {
+        if (!Auth::check() || Auth::user()->email !== 'admin@pawmedic.app') {
+            abort(403);
+        }
+
+        $ulasan = Ulasan::findOrFail($id);
+        $ulasan->is_hidden = !$ulasan->is_hidden;
+        $ulasan->save();
+
+        return redirect()->back()->with(
+            'success',
+            $ulasan->is_hidden ? 'Ulasan disembunyikan.' : 'Ulasan ditampilkan kembali.'
+        );
     }
 }
 

@@ -12,6 +12,7 @@ class Ulasan extends Model
         'nama_kucing',
         'hasil_diagnosis',
         'rating',
-        'komentar'
+        'komentar',
+        'is_hidden',
     ];
 }

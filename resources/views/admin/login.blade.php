@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Login Admin - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
 <style>
 :root{
@@ -150,6 +153,44 @@ body::before{
     transition:all 0.3s ease;
     background:#fafafa;
 }
+/* Hilangkan ikon "reveal password" bawaan browser (Windows/Edge) */
+input::-ms-reveal,
+input::-ms-clear{
+    display:none;
+}
+.password-wrap{
+    position:relative;
+}
+.password-wrap input{
+    padding-right:48px;
+}
+.toggle-pass{
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    width:38px;
+    height:38px;
+    border-radius:10px;
+    border:1px solid rgba(100,116,139,.25);
+    background:#fff;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    color:#0f3f33;
+    transition:all .2s ease;
+}
+.toggle-pass:hover{
+    background:var(--primary-light);
+    border-color:rgba(111,207,151,.55);
+}
+.toggle-pass svg{
+    width:18px;
+    height:18px;
+    display:block;
+    fill:currentColor;
+}
 
 .form-group input:focus{
     outline:none;
@@ -277,7 +318,14 @@ body::before{
     <div class="login-card">
         <div class="logo-section">
             <div class="logo">
-                <div class="logo-icon">🐾</div>
+                <div class="logo-icon" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                        <circle cx="6" cy="8" r="2.2"></circle>
+                        <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                        <circle cx="15.8" cy="8" r="2.2"></circle>
+                        <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+                    </svg>
+                </div>
                 <div class="logo-text">PawMedic</div>
             </div>
             <h1 class="login-title">Admin Login</h1>
@@ -286,8 +334,20 @@ body::before{
 
         @if($errors->any())
             <div class="error-message">
-                <span>⚠️</span>
+                <span><i class="bi bi-exclamation-triangle-fill"></i></span>
                 <span>{{ $errors->first() }}</span>
+            </div>
+        @endif
+        @if(session('success'))
+            <div class="error-message" style="background:#ecfdf3;border-left-color:#22c55e;color:#166534;">
+                <span><i class="bi bi-check-circle-fill"></i></span>
+                <span>{{ session('success') }}</span>
+            </div>
+        @endif
+        @if(session('error'))
+            <div class="error-message">
+                <span><i class="bi bi-exclamation-triangle-fill"></i></span>
+                <span>{{ session('error') }}</span>
             </div>
         @endif
 
@@ -301,7 +361,7 @@ body::before{
                     id="email" 
                     name="email" 
                     value="{{ old('email') }}"
-                    placeholder="admin@pawmedic.app"
+                    placeholder="Masukkan email aplikasi"
                     required
                     autofocus
                 >
@@ -309,13 +369,20 @@ body::before{
 
             <div class="form-group">
                 <label for="password">Password</label>
-                <input 
-                    type="password" 
-                    id="password" 
-                    name="password" 
-                    placeholder="Masukkan password"
-                    required
-                >
+                <div class="password-wrap">
+                    <input 
+                        type="password" 
+                        id="password" 
+                        name="password" 
+                        placeholder="Masukkan password"
+                        required
+                    >
+                    <button type="button" class="toggle-pass" id="togglePassword" aria-label="Tampilkan password" aria-pressed="false">
+                        <svg id="eyeIcon" viewBox="0 0 24 24" aria-hidden="true">
+                            <path d="M12 5c5.5 0 9.6 4.2 11 6.7a.6.6 0 0 1 0 .6C21.6 14.8 17.5 19 12 19S2.4 14.8 1 12.3a.6.6 0 0 1 0-.6C2.4 9.2 6.5 5 12 5zm0 2c-3.8 0-7 2.7-8.8 5 1.8 2.3 5 5 8.8 5s7-2.7 8.8-5c-1.8-2.3-5-5-8.8-5zm0 2.3A2.7 2.7 0 1 1 12 14.7a2.7 2.7 0 0 1 0-5.4z"/>
+                        </svg>
+                    </button>
+                </div>
             </div>
 
             <div class="remember-forgot">
@@ -323,7 +390,7 @@ body::before{
                     <input type="checkbox" name="remember">
                     <span>Ingat saya</span>
                 </label>
-                <a href="#" class="forgot-link">Lupa password?</a>
+                <a href="{{ route('admin.forgot.password') }}" class="forgot-link">Lupa password?</a>
             </div>
 
             <button type="submit" class="btn btn-primary">
@@ -336,6 +403,34 @@ body::before{
         </a>
     </div>
 </div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const passInput = document.getElementById('password');
+const toggleBtn = document.getElementById('togglePassword');
+const eyeIcon = document.getElementById('eyeIcon');
+
+function setEye(open) {
+    if (!eyeIcon) return;
+    eyeIcon.innerHTML = open
+        ? '<path d="M12 5c5.5 0 9.6 4.2 11 6.7a.6.6 0 0 1 0 .6C21.6 14.8 17.5 19 12 19S2.4 14.8 1 12.3a.6.6 0 0 1 0-.6C2.4 9.2 6.5 5 12 5zm0 2c-3.8 0-7 2.7-8.8 5 1.8 2.3 5 5 8.8 5s7-2.7 8.8-5c-1.8-2.3-5-5-8.8-5zm0 2.3A2.7 2.7 0 1 1 12 14.7a2.7 2.7 0 0 1 0-5.4z"/>'
+        : '<path d="M2 12c1.6-2.8 5.8-7 10-7 2.1 0 4.1.8 5.9 2l1.6-1.6 1.4 1.4-18 18-1.4-1.4 2.2-2.2C3 19 1.3 14.9 1 13a1 1 0 0 1 .1-.6l.9-1.4zm10-5c-3 0-5.7 2-7.6 4.5.6.8 1.4 1.7 2.3 2.5l1.8-1.8A3.7 3.7 0 0 1 12 8.3c.5 0 1 .1 1.4.3l1.6-1.6A8.3 8.3 0 0 0 12 7zm0 10c3 0 5.7-2 7.6-4.5a15 15 0 0 0-1.9-2.1l-2 2a3.7 3.7 0 0 1-4.9 4.9l-1.7 1.7c.9.5 1.9.8 2.9.8z"/>';
+}
+
+if (toggleBtn && passInput) {
+    let shown = false;
+    setEye(false);
+    toggleBtn.addEventListener('click', () => {
+        shown = !shown;
+        passInput.type = shown ? 'text' : 'password';
+        toggleBtn.setAttribute('aria-pressed', shown ? 'true' : 'false');
+        toggleBtn.setAttribute('aria-label', shown ? 'Sembunyikan password' : 'Tampilkan password');
+        setEye(shown);
+        passInput.focus({ preventScroll: true });
+    });
+}
+
+</script>
 
 </body>
 </html>

@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Ulasan Pengguna - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
 <style>
 :root{
@@ -214,17 +217,19 @@ body::before{
 }
 
 .star{
-    font-size:32px;
-    color:#ddd;
+    font-size:34px;
+    color:#d1d5db;
     cursor:pointer;
-    transition:all 0.2s ease;
+    transition:all 0.2s ease, text-shadow 0.2s ease;
     user-select:none;
+    padding:2px;
 }
 
 .star:hover,
 .star.active{
     color:var(--warning);
     transform:scale(1.1);
+    text-shadow:0 4px 10px rgba(245,158,11,.35);
 }
 
 /* ===== REVIEWS GRID ===== */
@@ -469,6 +474,18 @@ body::before{
         align-items:flex-start;
     }
 }
+
+@media (max-width:576px) and (orientation:portrait){
+    .container{padding:14px;}
+    .header h1{font-size:1.35rem;}
+    .header p{font-size:14px;}
+    .logo-icon{width:38px;height:38px;}
+    .stats-card{grid-template-columns:1fr 1fr;gap:10px;}
+    .stat-value{font-size:1.05rem;}
+    .form-card{padding:18px 14px;border-radius:16px;}
+    .btn{font-size:14px;padding:10px 12px;}
+    .review-card{padding:14px;}
+}
 </style>
 </head>
 
@@ -480,7 +497,14 @@ body::before{
 
     <div class="header">
         <a href="/" class="logo-link">
-            <div class="logo-icon">🐾</div>
+            <div class="logo-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <circle cx="6" cy="8" r="2.2"></circle>
+                    <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                    <circle cx="15.8" cy="8" r="2.2"></circle>
+                    <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+                </svg>
+            </div>
             <div class="logo-text">PawMedic</div>
         </a>
         <h1>Ulasan Pengguna</h1>
@@ -506,7 +530,7 @@ body::before{
     <!-- Form Submit Ulasan -->
     <div class="form-card">
         <div class="form-title">
-            <span>✍️</span>
+            <span><i class="bi bi-pencil-square"></i></span>
             <span>Tulis Ulasan Anda</span>
         </div>
         <form method="POST" action="{{ route('ulasan.store') }}">
@@ -547,16 +571,25 @@ body::before{
         <div class="section-header">
             <div class="section-title">Ulasan Pengguna</div>
             <div class="filter-buttons">
-                <button class="filter-btn active" data-filter="all">Semua</button>
-                <button class="filter-btn" data-filter="5">5 Bintang</button>
-                <button class="filter-btn" data-filter="4">4 Bintang</button>
-                <button class="filter-btn" data-filter="3">3 Bintang</button>
+                <button class="filter-btn active" data-filter-rating="all">Semua Bintang</button>
+                <button class="filter-btn" data-filter-rating="5">5 Bintang</button>
+                <button class="filter-btn" data-filter-rating="4">4 Bintang</button>
+                <button class="filter-btn" data-filter-rating="3">3 Bintang</button>
+                <button class="filter-btn" data-filter-rating="2">2 Bintang</button>
+                <button class="filter-btn" data-filter-rating="1">1 Bintang</button>
+                @auth
+                @if(Auth::user()->email === 'admin@pawmedic.app')
+                    <button class="filter-btn" data-filter-visibility="all">Semua Status</button>
+                    <button class="filter-btn" data-filter-visibility="visible">Tampil</button>
+                    <button class="filter-btn" data-filter-visibility="hidden">Hidden</button>
+                @endif
+                @endauth
             </div>
         </div>
         <div class="reviews-grid">
 
         @foreach($ulasan as $review)
-<div class="review-card" data-rating="{{ $review->rating }}">
+<div class="review-card" data-rating="{{ $review->rating }}" data-hidden="{{ ($review->is_hidden ?? false) ? '1' : '0' }}">
     <div class="review-header">
         <div class="avatar">{{ substr($review->nama,0,1) }}</div>
         <div class="review-info">
@@ -566,6 +599,9 @@ body::before{
             </div>
             <div class="review-rating">
                 {{ str_repeat('★', $review->rating) }}
+                @if(($review->is_hidden ?? false))
+                    <span style="margin-left:8px;font-size:12px;color:#b45309;background:#fef3c7;padding:2px 8px;border-radius:999px;">Hidden</span>
+                @endif
             </div>
         </div>
     </div>
@@ -576,17 +612,31 @@ body::before{
     <!-- ✅ HANYA ADMIN -->
     @auth
     @if(Auth::user()->email === 'admin@pawmedic.app')
+        <div style="margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;">
+        <form action="{{ route('ulasan.toggleHide', $review->id) }}" method="POST" style="display:inline;">
+            @csrf
+            <button type="submit"
+                    style="background:#f59e0b; color:white; border:none; padding:6px 12px; border-radius:6px;">
+                @if(($review->is_hidden ?? false))
+                    <i class="bi bi-eye"></i> Tampilkan
+                @else
+                    <i class="bi bi-eye-slash"></i> Hide
+                @endif
+            </button>
+        </form>
         <form action="{{ route('ulasan.delete', $review->id) }}" 
-              method="POST" 
-              onsubmit="return confirm('Yakin hapus ulasan ini?')"
-              style="margin-top:10px;">
+              method="POST"
+              class="delete-review-form"
+              data-name="{{ $review->nama }}"
+              style="display:inline;">
             @csrf
             @method('DELETE')
             <button type="submit" 
                     style="background:#ef4444; color:white; border:none; padding:6px 12px; border-radius:6px;">
-                🗑 Hapus
+                <i class="bi bi-trash"></i> Hapus
             </button>
         </form>
+        </div>
     @endif
     @endauth
 
@@ -603,29 +653,75 @@ body::before{
 
 @include('components.toast')
 @include('components.scroll-top')
+<div class="modal fade" id="deleteReviewModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content" style="border-radius:14px;">
+      <div class="modal-header">
+        <h5 class="modal-title">Konfirmasi Hapus Ulasan</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+      </div>
+      <div class="modal-body">Yakin hapus ulasan ini?</div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" style="width:auto;">Batal</button>
+        <button type="button" class="btn btn-danger" id="confirmDeleteReview" style="width:auto;">Ya, Hapus</button>
+      </div>
+    </div>
+  </div>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 <script>
 const buttons = document.querySelectorAll('.filter-btn');
 const cards = document.querySelectorAll('.review-card');
+let activeRatingFilter = 'all';
+let activeVisibilityFilter = 'all';
 
 buttons.forEach(btn => {
     btn.addEventListener('click', () => {
-
-        // hapus active semua
-        buttons.forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-
-        const filter = btn.getAttribute('data-filter');
-
-        cards.forEach(card => {
-            const rating = card.getAttribute('data-rating');
-
-            if (filter === 'all' || rating === filter) {
-                card.style.display = 'block';
-            } else {
-                card.style.display = 'none';
-            }
-        });
+        const ratingFilter = btn.getAttribute('data-filter-rating');
+        const visibilityFilter = btn.getAttribute('data-filter-visibility');
+        if (ratingFilter !== null) {
+            activeRatingFilter = ratingFilter;
+            document.querySelectorAll('[data-filter-rating]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        if (visibilityFilter !== null) {
+            activeVisibilityFilter = visibilityFilter;
+            document.querySelectorAll('[data-filter-visibility]').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+        applyReviewFilters();
     });
+});
+function applyReviewFilters() {
+    cards.forEach(card => {
+        const rating = card.getAttribute('data-rating');
+        const isHidden = card.getAttribute('data-hidden') === '1';
+        const passRating = activeRatingFilter === 'all' || rating === activeRatingFilter;
+        let passVisibility = true;
+        if (activeVisibilityFilter === 'visible') passVisibility = !isHidden;
+        if (activeVisibilityFilter === 'hidden') passVisibility = isHidden;
+        card.style.display = (passRating && passVisibility) ? 'block' : 'none';
+    });
+}
+applyReviewFilters();
+</script>
+<script>
+let pendingDeleteForm = null;
+const deleteModalEl = document.getElementById('deleteReviewModal');
+const deleteModal = deleteModalEl && window.bootstrap ? new bootstrap.Modal(deleteModalEl) : null;
+document.querySelectorAll('.delete-review-form').forEach((form) => {
+    form.addEventListener('submit', (e) => {
+        e.preventDefault();
+        pendingDeleteForm = form;
+        if (deleteModal) {
+            deleteModal.show();
+        } else if (confirm('Yakin hapus ulasan ini?')) {
+            form.submit();
+        }
+    });
+});
+document.getElementById('confirmDeleteReview')?.addEventListener('click', () => {
+    if (pendingDeleteForm) pendingDeleteForm.submit();
 });
 </script>
 <script>

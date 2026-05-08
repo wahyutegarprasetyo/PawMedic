@@ -5,6 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pilih Gejala - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
 <style>
 /* ===== GLOBAL ===== */
@@ -749,6 +751,16 @@ body::after{
         width:100%;
     }
 }
+
+@media (max-width:576px) and (orientation:portrait){
+    .header h1{font-size:1.35rem;line-height:1.35;}
+    .header p{font-size:14px;}
+    .logo-icon{width:38px;height:38px;}
+    .form-card{padding:18px 14px;border-radius:16px;}
+    .gejala-label{font-size:13.5px;padding:14px 14px;}
+    .btn{font-size:14px;padding:10px 12px;}
+    .progress-container{padding:12px 14px;}
+}
 </style>
 </head>
 
@@ -757,7 +769,14 @@ body::after{
     <!-- HEADER -->
     <div class="header">
         <a href="/" class="logo-link">
-            <div class="logo-icon">🐾</div>
+            <div class="logo-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <circle cx="6" cy="8" r="2.2"></circle>
+                    <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                    <circle cx="15.8" cy="8" r="2.2"></circle>
+                    <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+                </svg>
+            </div>
             <div class="logo-text">PawMedic</div>
         </a>
         @php
@@ -780,19 +799,19 @@ body::after{
 
     <!-- FORM CARD -->
     <div class="form-card">
-    <form id="gejalaForm" action="{{ route('diagnosis.proses') }}" method="POST">
+    <form id="gejalaForm" method="POST">
             @csrf
             
             <!-- Info Box -->
             <div class="info-box">
-                <div class="icon">💡</div>
+                <div class="icon"><i class="bi bi-lightbulb"></i></div>
                 <p >Pilih minimal 4 dan maksimal 7 gejala yang terjadi pada kucing anda</p>
             </div>
 
             <!-- Gejala Section -->
             <div class="gejala-section">
                 <div class="section-title">
-                    <span>🔍 Gejala yang Ditemukan</span>
+                    <span><i class="bi bi-search"></i> Gejala yang Ditemukan</span>
                     <span class="selected-count" id="selectedCount">0 dipilih</span>
                 </div>
                 
@@ -801,7 +820,7 @@ body::after{
                     <input 
                         type="text" 
                         id="searchGejala" 
-                        placeholder="🔍 Cari gejala..." 
+                        placeholder="Cari gejala..." 
                         class="search-input"
                     >
                     <button type="button" id="clearSearch" class="clear-search" style="display:none;">✕</button>
@@ -874,19 +893,29 @@ checkboxes.forEach(checkbox => {
 // Form submission
 
 form.addEventListener('submit', function(e) {
-    const checked = document.querySelectorAll('.gejala-checkbox:checked').length;
+    e.preventDefault();
 
-    if (checked < 4) {
-        e.preventDefault();
+    const checked = document.querySelectorAll('.gejala-checkbox:checked');
+
+    if (checked.length < 4) {
         alert("Minimal pilih 4 gejala!");
         return;
     }
 
-    if (checked > 7) {
-        e.preventDefault();
+    if (checked.length > 7) {
         alert("Maksimal hanya 7 gejala!");
         return;
     }
+
+     // ambil gejala
+     let gejala = [];
+    checked.forEach(c => gejala.push(c.value));
+
+    // simpan ke localStorage (AMAN 🔥)
+    localStorage.setItem('gejala', JSON.stringify(gejala));
+
+    // pindah ke loading
+    window.location.href = "/loading-diagnosis";
 });
 
 // Search functionality

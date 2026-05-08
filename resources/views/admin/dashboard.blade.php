@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Dashboard Admin - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 
 <style>
 :root{
@@ -73,6 +74,7 @@ body{
     align-items:center;
     justify-content:center;
     font-size:22px;
+    color:#fff;
 }
 
 .logo-text{
@@ -156,6 +158,10 @@ body{
     color:var(--text-dark);
     font-weight:600;
     font-size:13px;
+}
+
+.admin-shortcut i{
+    margin-right:6px;
 }
 
 /* ===== STATS GRID ===== */
@@ -371,7 +377,14 @@ body{
 <div class="admin-header">
     <div class="header-content">
         <div class="logo-section">
-            <div class="logo-icon">🐾</div>
+            <div class="logo-icon" aria-hidden="true">
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="currentColor">
+                    <circle cx="6" cy="8" r="2.2"></circle>
+                    <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                    <circle cx="15.8" cy="8" r="2.2"></circle>
+                    <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+                </svg>
+            </div>
             <div class="logo-text">PawMedic Admin</div>
         </div>
         <div class="user-menu">
@@ -396,10 +409,12 @@ body{
 <div class="container">
     <h1 class="page-title">Dashboard Admin</h1>
     <div class="admin-shortcuts">
-        <a href="#" class="admin-shortcut" onclick="toggleDiagnosis(); return false;">📋 Data Diagnosis</a>
-        <a href="#" class="admin-shortcut" onclick="toggleUsers(); return false;">👥 Data Pengguna</a>
-        <a href="#" class="admin-shortcut" onclick="toggleChart(); return false;">📊 Statistik</a>
-        <a href="{{ route('admin.disease.settings') }}" class="admin-shortcut">🧾 Pengaturan Penyakit</a>
+        <a href="#" class="admin-shortcut" onclick="toggleDiagnosis(); return false;"><i class="bi bi-card-list"></i>Data Diagnosis</a>
+        <a href="#" class="admin-shortcut" onclick="toggleUsers(); return false;"><i class="bi bi-people"></i>Data Pengguna</a>
+        <a href="#" class="admin-shortcut" onclick="toggleChart(); return false;"><i class="bi bi-bar-chart"></i>Statistik</a>
+        <a href="{{ route('admin.disease.settings') }}" class="admin-shortcut"><i class="bi bi-journal-medical"></i>Penjelasan Penyakit</a>
+        <a href="{{ route('admin.faq.settings') }}" class="admin-shortcut"><i class="bi bi-wrench-adjustable-circle-fill"></i>Kelola FAQ</a>
+        <a href="{{ route('admin.training.settings') }}" class="admin-shortcut"><i class="bi bi-database-add"></i>Calon Data Training</a>
     </div>
 
     <!-- Statistics -->
@@ -411,7 +426,7 @@ body{
                     <div class="stat-value">{{ $stats['total_diagnosis'] }}</div>
                     <div class="stat-label">Total Diagnosis</div>
                 </div>
-                <div class="stat-icon">📊</div>
+                <div class="stat-icon"><i class="bi bi-bar-chart-fill"></i></div>
             </div>
             <div class="stat-change">+{{ $stats['today_diagnosis'] }} hari ini</div>
             <a href="#" onclick="toggleDiagnosis(); return false;"
@@ -426,7 +441,7 @@ body{
                     <div class="stat-value">{{ $stats['today_diagnosis'] }}</div>
                     <div class="stat-label">Diagnosis Hari Ini</div>
                 </div>
-                <div class="stat-icon">📈</div>
+                <div class="stat-icon"><i class="bi bi-graph-up-arrow"></i></div>
             </div>
             <div class="stat-change">Aktif hari ini</div>
             <div class="stat-change">
@@ -450,7 +465,7 @@ body{
                     <div class="stat-value">{{ $stats['total_users'] }}</div>
                     <div class="stat-label">Total Pengguna</div>
                 </div>
-                <div class="stat-icon">👥</div>
+                <div class="stat-icon"><i class="bi bi-people-fill"></i></div>
             </div>
             <div class="stat-change">Pengguna aktif</div>
             <a href="#" onclick="toggleUsers(); return false;"
@@ -465,7 +480,7 @@ body{
                     <div class="stat-value" style="font-size:24px;">{{ $stats['most_common_disease'] }}</div>
                     <div class="stat-label">Penyakit Paling Umum</div>
                 </div>
-                <div class="stat-icon">🩺</div>
+                <div class="stat-icon"><i class="bi bi-heart-pulse-fill"></i></div>
             </div>
             <div class="stat-change">Paling sering didiagnosis</div>
         
@@ -493,17 +508,24 @@ body{
 </div>
 
     <div class="data-section">
-    <div class="section-title">📈 Tren Diagnosis (7 Hari Terakhir)</div>
+    <div style="display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;">
+        <div class="section-title">📈 Tren Diagnosis</div>
+        <select id="trendMode" class="form-control" style="max-width:260px;">
+            <option value="7d">7 Hari Terakhir</option>
+            <option value="month">Per Bulan (Tahun Ini)</option>
+            <option value="all">Seluruh Periode</option>
+        </select>
+    </div>
     <canvas id="chartHarian"></canvas>
 </div>
 </div>
 
 <div id="diagnosisBox" style="display:none; margin-top:20px;">
     <div class="data-section">
-        <div class="section-title">📋 Data Diagnosis</div>
+        <div class="section-title"><i class="bi bi-card-list"></i> Data Diagnosis</div>
 
         <div class="table-controls">
-            <input type="text" id="searchDiagnosis" class="form-control" placeholder="🔍 Cari data diagnosis...">
+            <input type="text" id="searchDiagnosis" class="form-control" placeholder="Cari data diagnosis...">
             <select id="filterDiagnosis" class="form-control">
                 <option value="">Semua Penyakit</option>
                 @foreach($data->pluck('hasil_diagnosis')->unique() as $penyakit)
@@ -528,6 +550,7 @@ body{
                     <th>Umur Kucing</th>
                     <th>Jenis Kelamin</th>
                     <th>Penyakit</th>
+                    <th>Gejala Dipilih</th>
                     <th>Tanggal</th>
                 </tr>
             </thead>
@@ -539,6 +562,25 @@ body{
                     <td>{{ $item->umur_kucing ?? '-' }}</td>
                     <td>{{ $item->jenis_kelamin ?? '-' }}</td>
                     <td>{{ $item->hasil_diagnosis ?? '-' }}</td>
+                    <td style="max-width:340px;text-align:center;">
+                        @php
+                            $sym = $item->gejala_dipilih ?? '';
+                            $arr = json_decode((string)$sym, true);
+                            if (!is_array($arr)) $arr = [];
+                            $arr = array_values(array_filter(array_map('trim', $arr), fn($v) => $v !== ''));
+                            $count = count($arr);
+                        @endphp
+                        @if($count === 0)
+                            <span style="color:#64748b;">-</span>
+                        @else
+                            <a href="#"
+                               class="symptoms-link"
+                               data-symptoms='@json($arr, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES)'
+                               style="color:#2f855a;font-weight:700;text-decoration:none;">
+                                Lihat gejala ({{ $count }})
+                            </a>
+                        @endif
+                    </td>
                     <td>{{ \Carbon\Carbon::parse($item->created_at)->format('d M Y') }}</td>
                 </tr>
                 @endforeach
@@ -550,9 +592,9 @@ body{
 
 <div id="userBox" style="display:none; margin-top:20px;">
     <div class="data-section">
-        <div class="section-title">👥 Data Pengguna</div>
+        <div class="section-title"><i class="bi bi-people"></i> Data Pengguna</div>
         <div class="table-controls">
-            <input type="text" id="searchUser" class="form-control" placeholder="🔍 Cari pengguna...">
+            <input type="text" id="searchUser" class="form-control" placeholder="Cari pengguna...">
             <select id="sortUser" class="form-control">
                 <option value="latest">Terbaru</option>
                 <option value="oldest">Terlama</option>
@@ -590,7 +632,7 @@ body{
     <!-- Recent Diagnosis -->
     <div class="data-section">
         <div class="section-title">
-            <span>📋</span>
+            <span><i class="bi bi-clock-history"></i></span>
             <span>Diagnosis Terbaru</span>
         </div>
         <table class="table">
@@ -618,24 +660,18 @@ body{
     <!-- Quick Actions -->
     <div class="data-section">
         <div class="section-title">
-            <span>⚡</span>
+            <span><i class="bi bi-lightning-charge-fill"></i></span>
             <span>Aksi Cepat</span>
         </div>
         <div style="display:flex; gap:16px; flex-wrap:wrap;">
             <a href="/" style="padding:12px 24px; background:linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%); color:white; text-decoration:none; border-radius:12px; font-weight:600; transition:all 0.3s ease;">
-                🏠 Lihat Website
+                <i class="bi bi-house-door-fill"></i> Lihat Website
             </a>
             <a href="{{ route('ulasan') }}" style="padding:12px 24px; background:white; border:2px solid var(--primary); color:var(--primary-dark); text-decoration:none; border-radius:12px; font-weight:600; transition:all 0.3s ease;">
-                💬 Lihat Ulasan
+                <i class="bi bi-chat-dots-fill"></i> Lihat Ulasan
             </a>
             <a href="{{ route('faq') }}" style="padding:12px 24px; background:white; border:2px solid var(--primary); color:var(--primary-dark); text-decoration:none; border-radius:12px; font-weight:600; transition:all 0.3s ease;">
-                ❓ Lihat FAQ
-            </a>
-            <a href="{{ route('admin.faq.settings') }}" style="padding:12px 24px; background:white; border:2px solid var(--primary); color:var(--primary-dark); text-decoration:none; border-radius:12px; font-weight:600; transition:all 0.3s ease;">
-                🛠️ Kelola FAQ
-            </a>
-            <a href="{{ route('admin.disease.settings') }}" style="padding:12px 24px; background:white; border:2px solid var(--primary); color:var(--primary-dark); text-decoration:none; border-radius:12px; font-weight:600; transition:all 0.3s ease;">
-                🧾 Atur Penjelasan Penyakit
+                <i class="bi bi-question-circle-fill"></i> Lihat FAQ
             </a>
         </div>
     </div>
@@ -730,6 +766,24 @@ function toggleDiagnosis() {
 <script>
 let diseaseChart = null;
 let ratingChart = null;
+let trendChart = null;
+const trendDatasets = {
+    '7d': {
+        labels: {!! json_encode($stats['trend_7_labels']) !!},
+        data: {!! json_encode($stats['trend_7_data']) !!},
+        label: 'Diagnosis (7 hari)',
+    },
+    'month': {
+        labels: {!! json_encode($stats['trend_month_labels']) !!},
+        data: {!! json_encode($stats['trend_month_data']) !!},
+        label: 'Diagnosis per bulan',
+    },
+    'all': {
+        labels: {!! json_encode($stats['trend_all_labels']) !!},
+        data: {!! json_encode($stats['trend_all_data']) !!},
+        label: 'Diagnosis seluruh periode',
+    }
+};
 
 function loadMainChart() {
     if (diseaseChart) return;
@@ -754,38 +808,62 @@ function loadMainChart() {
                 tooltip: { mode: 'index', intersect: false }
             },
             scales: {
-                y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#e5e7eb' } },
-                x: { grid: { display: false } }
+                // 🔥 TAMBAHKAN INI
+                x: {
+                    ticks: {
+                        display: false // ❗ ini yang menghilangkan nama penyakit
+                    },
+                    grid: {
+                        display: false // opsional biar lebih bersih
+                    }
+                },
+
+                y: {
+                    beginAtZero: true,
+                    ticks: { precision: 0 },
+                    grid: { color: '#e5e7eb' }
+                }
             }
         }
     });
 }
 
-new Chart(document.getElementById('chartHarian'), {
-    type: 'line',
-    data: {
-        labels: {!! json_encode($stats['daily_labels']) !!},
-        datasets: [{
-            label: 'Jumlah Diagnosis',
-            data: {!! json_encode($stats['daily_data']) !!},
-            tension: 0.35,
-            fill: true,
-            backgroundColor: 'rgba(111, 207, 151, 0.2)',
-            borderColor: '#4bb66f',
-            borderWidth: 3,
-            pointRadius: 4,
-            pointBackgroundColor: '#4bb66f'
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: true } },
-        scales: {
-            y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#e5e7eb' } },
-            x: { grid: { display: false } }
-        }
+function renderTrendChart(mode = '7d') {
+    const source = trendDatasets[mode] || trendDatasets['7d'];
+    if (!trendChart) {
+        trendChart = new Chart(document.getElementById('chartHarian'), {
+            type: 'line',
+            data: {
+                labels: source.labels,
+                datasets: [{
+                    label: source.label,
+                    data: source.data,
+                    tension: 0.35,
+                    fill: true,
+                    backgroundColor: 'rgba(111, 207, 151, 0.2)',
+                    borderColor: '#4bb66f',
+                    borderWidth: 3,
+                    pointRadius: 4,
+                    pointBackgroundColor: '#4bb66f'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: { legend: { display: true } },
+                scales: {
+                    y: { beginAtZero: true, ticks: { precision: 0 }, grid: { color: '#e5e7eb' } },
+                    x: { grid: { display: false } }
+                }
+            }
+        });
+        return;
     }
-});
+
+    trendChart.data.labels = source.labels;
+    trendChart.data.datasets[0].data = source.data;
+    trendChart.data.datasets[0].label = source.label;
+    trendChart.update();
+}
 
 function loadRatingChart() {
     if (ratingChart) return;
@@ -821,9 +899,69 @@ document.getElementById('filterDiagnosis').addEventListener('change', applyDiagn
 document.getElementById('sortDiagnosis').addEventListener('change', applyDiagnosisFilters);
 document.getElementById('searchUser').addEventListener('input', applyUserFilters);
 document.getElementById('sortUser').addEventListener('change', applyUserFilters);
+document.getElementById('trendMode').addEventListener('change', (e) => renderTrendChart(e.target.value));
 
 applyDiagnosisFilters();
 applyUserFilters();
+renderTrendChart('7d');
+</script>
+
+<dialog id="symptomsDialog" style="border:none;border-radius:14px;max-width:520px;width:92%;padding:0;box-shadow:0 18px 50px rgba(17,77,58,.22);position:fixed;left:50%;top:50%;transform:translate(-50%,-50%);margin:0;">
+    <div style="padding:16px 16px 10px;background:#fff;border-bottom:1px solid #e2e8f0;display:flex;justify-content:space-between;align-items:center;gap:12px;">
+        <div style="font-weight:800;color:#114d3a;">Gejala Dipilih</div>
+        <button id="closeSymptomsDialog" type="button" style="border:none;background:#f1f5f9;border-radius:10px;padding:8px 10px;cursor:pointer;font-weight:800;">✕</button>
+    </div>
+    <div style="padding:14px 16px 16px;background:#fff;">
+        <div id="symptomsDialogBody" style="display:flex;flex-wrap:wrap;gap:8px;"></div>
+        <div style="margin-top:14px;color:#64748b;font-size:12px;">Data ini tersimpan untuk evaluasi & peningkatan dataset.</div>
+    </div>
+</dialog>
+<style>
+#symptomsDialog::backdrop{
+    background:rgba(15,23,42,.36);
+}
+</style>
+
+<script>
+const symptomsDialog = document.getElementById('symptomsDialog');
+const symptomsDialogBody = document.getElementById('symptomsDialogBody');
+const closeSymptomsDialog = document.getElementById('closeSymptomsDialog');
+
+function openSymptomsDialog(list) {
+    if (!symptomsDialog || !symptomsDialogBody) return;
+    symptomsDialogBody.innerHTML = '';
+    (list || []).forEach((g) => {
+        const chip = document.createElement('span');
+        chip.textContent = g;
+        chip.style.cssText = 'font-size:12px;padding:6px 10px;border-radius:999px;background:#e8f7ef;border:1px solid #b7ebcf;color:#114d3a;font-weight:700;';
+        symptomsDialogBody.appendChild(chip);
+    });
+    if (typeof symptomsDialog.showModal === 'function') {
+        symptomsDialog.showModal();
+    }
+}
+
+document.querySelectorAll('.symptoms-link').forEach((a) => {
+    a.addEventListener('click', (e) => {
+        e.preventDefault();
+        let list = [];
+        try {
+            list = JSON.parse(a.getAttribute('data-symptoms') || '[]');
+        } catch (_) {
+            list = [];
+        }
+        openSymptomsDialog(list);
+    });
+});
+
+if (closeSymptomsDialog && symptomsDialog) {
+    closeSymptomsDialog.addEventListener('click', () => symptomsDialog.close());
+    symptomsDialog.addEventListener('click', (e) => {
+        const rect = symptomsDialog.getBoundingClientRect();
+        const inDialog = rect.top <= e.clientY && e.clientY <= rect.bottom && rect.left <= e.clientX && e.clientX <= rect.right;
+        if (!inDialog) symptomsDialog.close();
+    });
+}
 </script>
 </body>
 </html>

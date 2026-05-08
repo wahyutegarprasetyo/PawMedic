@@ -2,8 +2,13 @@
 <html lang="id">
 <head>
 <meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>PawMedic - Sistem Pakar Kucing</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;600&display=swap" rel="stylesheet">
+<link href="https://unpkg.com/aos@2.3.1/dist/aos.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css" rel="stylesheet">
+<link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
 <style>
 /* ===== GLOBAL ===== */
@@ -20,6 +25,7 @@ body{
     color:#333;
     -webkit-font-smoothing:antialiased;
     line-height:1.6;
+    overflow-x:hidden;
 } 
 
 .container{
@@ -36,7 +42,7 @@ h1,h2,h3{
 } 
 
 /* ===== NAVBAR ===== */
-.navbar{
+.navbar-custom{
     display:flex;
     justify-content:space-between;
     align-items:center;
@@ -64,6 +70,13 @@ h1,h2,h3{
     justify-content:center;
     font-size:22px;
     transition:0.4s;
+    color:#fff;
+}
+.paw-inline{
+    width:20px;
+    height:20px;
+    display:inline-block;
+    fill:currentColor;
 }
 
 .logo-text{
@@ -101,66 +114,69 @@ h1,h2,h3{
 }
 .nav-menu a:hover{
     color:#000;
+    background:#f1f5f9;
 }
 
-/* ===== BUTTON ===== */
+/* ===== BUTTON (Modern Elegant) ===== */
 .btn{
-    background:linear-gradient(135deg, #6fcf97 0%, #4bb66f 100%);
-    color:white;
-    border:none;
-    padding:16px 32px;
-    border-radius:14px;
-    cursor:pointer;
+    border-radius:12px;
     font-weight:600;
+    transition:all .25s ease;
+    letter-spacing:.01em;
+}
+.btn-nav-cta{
+    background:linear-gradient(135deg,#66cf94,#42b777) !important;
+    color:#fff !important;
+    border:1px solid #46b97a;
+    box-shadow:0 8px 18px rgba(66,183,119,.22);
+    font-size:14px;
+}
+.btn-nav-cta:hover{
+    transform:translateY(-1px) scale(1.01);
+    box-shadow:0 10px 20px rgba(66,183,119,.3);
+    color:rgb(75, 75, 75) !important;
+    background:rgb(255, 255, 255) !important;
+}
+.btn-hero-primary{
+    background:linear-gradient(135deg,#69d29a 0%,#40b674 100%);
+    color:#fff !important;
+    border:1px solid #49bb7d;
+    box-shadow:0 10px 24px rgba(64,182,116,.25);
+    padding:12px 24px;
+    font-size:17px;
+    border-radius:13px;
+}
+.btn-hero-primary:hover{
+    transform:translateY(-2px);
+    box-shadow:0 14px 28px rgba(64,182,116,.31);
+    color:#fff !important;
+}
+.btn-hero-secondary{
+    background:rgba(255,255,255,.7);
+    color:#1d7a4f !important;
+    border:1.5px solid rgba(73,187,125,.55);
+    backdrop-filter:blur(4px);
+    box-shadow:0 6px 16px rgba(17,77,58,.08);
+    padding:12px 24px;
+    font-size:17px;
+    border-radius:13px;
+}
+.btn-hero-secondary:hover{
+    background:#fff;
+    border-color:#46b97a;
+    transform:translateY(-1px);
+    box-shadow:0 10px 20px rgba(17,77,58,.11);
+}
+.btn-mobile-cta{
+    background:linear-gradient(135deg,#67d098,#41b775);
+    color:#fff !important;
+    border:1px solid #49bb7d;
+    box-shadow:0 10px 24px rgba(17,77,58,.25);
     font-size:16px;
-    transition:all 0.3s ease;
-    box-shadow:0 4px 16px rgba(111,207,151,0.3);
-    position:relative;
-    overflow:hidden;
-    text-decoration:none;
-    display:inline-flex;
-    align-items:center;
-    justify-content:center;
-    gap:8px;
-    letter-spacing:0.3px;
+    font-weight:700;
 }
-.btn::before{
-    content:'';
-    position:absolute;
-    top:0;
-    left:-100%;
-    width:100%;
-    height:100%;
-    background:linear-gradient(90deg, transparent, rgba(255,255,255,0.25), transparent);
-    transition:left 0.6s;
-}
-.btn:hover::before{
-    left:100%;
-}
-.btn:hover{
-    transform:translateY(-4px) scale(1.02);
-    box-shadow:0 12px 32px rgba(17,77,58,0.25);
-    background:linear-gradient(135deg, #7dd9a8 0%, #5ac77f 100%);
-}
-.btn:active{
-    transform:translateY(-2px) scale(1);
-}
-.btn:focus{
-    outline:3px solid rgba(111,207,151,0.4);
-    outline-offset:3px;
-}
-
-.btn.secondary{
-    background:#ffffff;
-    color:#2f855a;
-    border:2px solid #6fcf97;
-    box-shadow:0 2px 10px rgba(17,77,58,0.1);
-}
-.btn.secondary:hover{
-    background:#e8f7ef;
-    border-color:#4bb66f;
-    transform:translateY(-3px) scale(1.02);
-    box-shadow:0 8px 20px rgba(17,77,58,0.15);
+.btn-mobile-cta:hover{
+    color:#fff !important;
 }
 
 /* ===== HERO ===== */
@@ -299,12 +315,20 @@ section > p{
     margin-bottom:10px;
     color:#114d3a;
     font-weight:700;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    gap:8px;
+}
+.card.feature h3 i{
+    color:#4bb66f;
 }
 .card.feature p{
     font-size:15px;
     line-height:1.7;
     color:#64748b;
     margin:0;
+    word-break:break-word;
 }
 
 .hero-image{
@@ -312,6 +336,7 @@ section > p{
     align-items:center;
     justify-content:center;
     flex-shrink:0;
+    margin:0 auto;
 }
 .hero-image img{
     width:100%;
@@ -456,6 +481,21 @@ footer{
     transform:scale(1.1);
 }
 
+.mobile-cta{
+    display:none;
+}
+
+/* Scroll reveal fallback (tanpa library eksternal) */
+[data-aos]{
+    opacity:0;
+    transform:translateY(20px);
+    transition:opacity .7s ease, transform .7s ease;
+}
+[data-aos].aos-show{
+    opacity:1;
+    transform:translateY(0);
+}
+
 /* ===== ANIMATIONS ===== */
 @keyframes fadeUp{
     from{
@@ -484,17 +524,13 @@ footer{
     .container{
         padding:24px;
     }
-    .navbar{
+    .navbar-custom{
         flex-direction:column;
         align-items:flex-start;
         gap:14px;
         margin-bottom:28px;
     }
-    .nav-menu{
-        width:100%;
-        flex-wrap:wrap;
-        gap:10px;
-    }
+    .nav-menu{width:100%;}
     .nav-menu a{
         font-size:14px;
     }
@@ -505,8 +541,9 @@ footer{
         flex-direction:column;
         text-align:center;
         justify-content:center;
-        padding:48px 32px;
+        padding:34px 24px;
         min-height:auto;
+        gap:22px;
     }
     .hero-content{
         margin-bottom:30px;
@@ -530,6 +567,10 @@ footer{
         flex:1;
         min-width:200px;
     }
+    .hero-image img{
+        max-width:360px;
+        width:100%;
+    }
     .features{
         grid-template-columns:repeat(2,1fr);
     }
@@ -543,54 +584,59 @@ footer{
 
 @media(max-width:500px){
     .container{
-        padding:16px;
+        padding:12px;
     }
     .logo-text{
         font-size:18px;
     }
-    .navbar{
+    .navbar-custom{
         padding:12px 0;
         align-items:stretch;
+        margin-bottom:20px;
     }
-    .menu-toggle{
-        display:inline-flex;
-        align-items:center;
-        justify-content:center;
-        align-self:flex-end;
+    .navbar-toggler{
+        border-radius:10px;
+        border:1px solid #d1d5db;
+        padding:6px 10px;
     }
     .nav-menu{
-        display:none;
-        grid-template-columns:1fr 1fr;
         width:100%;
-    }
-    .nav-menu.open{
-        display:grid;
+        padding:10px 0;
     }
     .nav-menu a{
-        text-align:center;
-        padding:8px 6px;
+        display:block;
+        text-align:left;
+        padding:10px 8px;
         border-radius:8px;
         background:#fff;
         border:1px solid #eef5f3;
+        font-size:14px;
+        margin-bottom:8px;
     }
     .nav-menu .btn{
-        grid-column:1 / -1;
         width:100%;
         margin-left:0;
     }
     .hero{
-        padding:28px 18px 32px;
-        gap:20px;
-        border-radius:18px;
+        padding:20px 12px 18px;
+        gap:14px;
+        border-radius:14px;
     }
     .features{
         grid-template-columns:1fr;
     }
     .hero-content h2{
-        font-size:22px;
+        font-size:20px;
+        line-height:1.3;
+        margin-bottom:10px;
+    }
+    .hero-content p{
+        font-size:14px;
+        line-height:1.65;
+        margin-bottom:16px;
     }
     .hero-image img{
-        max-width:320px;
+        max-width:220px;
         width:100%;
     }
     .hero-actions{
@@ -600,25 +646,65 @@ footer{
     .hero-actions .btn{
         width:100%;
         min-width:unset;
+        padding-top:10px;
+        padding-bottom:10px;
+        font-size:15px;
     }
     section{
-        margin-top:56px;
+        margin-top:34px;
     }
     section > p{
         font-size:15px;
-        margin-bottom:24px;
+        margin-bottom:18px;
+        line-height:1.6;
+    }
+    section h2{
+        font-size:24px;
+        margin-bottom:10px;
     }
     .card.feature{
-        padding:22px 18px;
+        padding:18px 14px;
         min-height:unset;
+        border-radius:12px;
+    }
+    .card.feature h3{
+        font-size:17px;
+        line-height:1.35;
+    }
+    .card.feature p{
+        font-size:14px;
+    }
+    #diagnosa{
+        padding:16px 12px;
+        margin-top:28px;
+        border-radius:10px;
+    }
+    .testimonials{
+        gap:12px;
+    }
+    .card.testimonial{
+        padding:14px;
+    }
+    .quote{
+        font-size:14px;
     }
     footer{
-        margin-top:44px;
-        padding-bottom:42px;
+        margin-top:30px;
+        padding-bottom:86px;
+        font-size:13px;
     }
     .admin-login-link{
         bottom:2px;
         right:2px;
+    }
+    .mobile-cta{
+        display:none !important;
+    }
+    .mobile-cta .btn{
+        width:100%;
+        border-radius:12px;
+        font-size:15px;
+        padding:12px 14px;
     }
 }
 </style>
@@ -628,23 +714,34 @@ footer{
 <div class="container">
 
 <!-- NAVBAR -->
-<div class="navbar">
+<div class="navbar-custom navbar navbar-expand-md">
     <div class="logo">
-        <div class="logo-icon">🐾</div>
+        <div class="logo-icon" aria-hidden="true">
+            <svg class="paw-inline" viewBox="0 0 24 24">
+                <circle cx="6" cy="8" r="2.2"></circle>
+                <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                <circle cx="15.8" cy="8" r="2.2"></circle>
+                <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+            </svg>
+        </div>
         <div class="logo-text">PawMedic</div>
     </div>
-    <button class="menu-toggle" id="menuToggle" aria-label="Buka menu">☰</button>
-    <div class="nav-menu" id="navMenu">
-        <a href="#fitur">Fitur</a>
-        <a href="#cara">Cara Kerja</a>
-        <a href="{{ route('ulasan') }}">Ulasan</a>
-        <a href="{{ route('faq') }}">FAQ</a>
-        <a href="{{ route('biodata') }}" class="btn" style="padding:10px 20px; font-size:14px;">Mulai Diagnosis</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu" aria-controls="navMenu" aria-expanded="false" aria-label="Buka menu">
+        ☰
+    </button>
+    <div class="collapse navbar-collapse justify-content-end" id="navMenu">
+        <div class="nav-menu d-md-flex align-items-center gap-2">
+            <a href="#fitur">Fitur</a>
+            <a href="#cara">Cara Kerja</a>
+            <a href="{{ route('ulasan') }}">Ulasan</a>
+            <a href="{{ route('faq') }}">FAQ</a>
+            <a href="{{ route('biodata') }}" class="btn btn-nav-cta px-3">Mulai Diagnosis</a>
+        </div>
     </div>
 </div>
 
 <!-- HERO -->
-<section class="hero">
+<section class="hero" data-aos="fade-up">
     <div class="hero-content">
         <h2>Bantu Jaga Kesehatan Kucing Anda</h2>
         <p>
@@ -652,11 +749,18 @@ footer{
             memahami gejala dan mendapatkan rekomendasi perawatan awal dengan mudah dan cepat.
         </p>
         <div class="hero-actions">
-            <a href="{{ route('biodata') }}" class="btn">
+            <a href="{{ route('biodata') }}" class="btn btn-hero-primary btn-lg">
                 <span>Mulai Diagnosis</span>
-                <span>🐾</span>
+                <span>
+                    <svg class="paw-inline" viewBox="0 0 24 24">
+                        <circle cx="6" cy="8" r="2.2"></circle>
+                        <circle cx="10.8" cy="5.6" r="2.1"></circle>
+                        <circle cx="15.8" cy="8" r="2.2"></circle>
+                        <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+                    </svg>
+                </span>
             </a>
-            <button class="btn secondary" onclick="scrollToSection('fitur')">Pelajari Lebih Lanjut</button>
+            <button class="btn btn-hero-secondary btn-lg" onclick="scrollToSection('fitur')">Pelajari Lebih Lanjut</button>
         </div>
     </div>
     <div class="hero-image">
@@ -666,31 +770,31 @@ footer{
     
 
 <!-- FITUR -->
-<section id="fitur">
+<section id="fitur" data-aos="fade-up">
     <h2>Fitur Utama</h2>
     <p>Alat yang dirancang untuk membantu pemilik kucing memahami kondisi hewan peliharaan mereka</p>
     <div class="features">
-        <div class="card feature">
-            <h3>🩺 Konsultasi Cepat</h3>
+        <div class="card feature" data-aos="zoom-in" data-aos-delay="100">
+            <h3><i class="bi bi-heart-pulse"></i> Konsultasi Cepat</h3>
             <p>Memberikan gambaran awal kondisi kesehatan kucing secara cepat dan mudah</p>
         </div>
-        <div class="card feature">
-            <h3>🔍 Diagnosis Gejala</h3>
+        <div class="card feature" data-aos="zoom-in" data-aos-delay="200">
+            <h3><i class="bi bi-search"></i> Diagnosis Gejala</h3>
             <p>Menganalisis gejala menggunakan basis pengetahuan sistem pakar</p>
         </div>
-        <div class="card feature">
-            <h3>🚑 Penanganan Awal</h3>
+        <div class="card feature" data-aos="zoom-in" data-aos-delay="300">
+            <h3><i class="bi bi-shield-check"></i> Penanganan Awal</h3>
             <p>Panduan langkah awal sebelum konsultasi ke dokter hewan</p>
         </div>
-        <div class="card feature">
-            <h3>🐾 Tips Perawatan</h3>
+        <div class="card feature" data-aos="zoom-in" data-aos-delay="400">
+            <h3><i class="bi bi-stars"></i> Tips Perawatan</h3>
             <p>Menyediakan saran perawatan dasar untuk kucing sehari-hari</p>
         </div>
     </div>
 </section>
 
 <!-- CARA KERJA -->
-<section id="cara">
+<section id="cara" data-aos="fade-up">
     <h2>Cara Kerja</h2>
     <div class="features">
         <div class="card feature">
@@ -709,7 +813,7 @@ footer{
 </section>
 
 <!-- DIAGNOSA / TESTIMONIALS -->
-<section id="diagnosa">
+<section id="diagnosa" data-aos="fade-up">
     <h2>Ulasan Pengguna</h2>
     <p>Pengalaman para pemilik kucing yang telah menggunakan PawMedic.</p>
     <p style="margin-top:12px;">
@@ -742,10 +846,22 @@ footer{
 <!-- FOOTER -->
 <footer>
     <p>© 2026 PawMedic</p>
-    <p>Email: support@pawmedic.app</p>
-    <a href="{{ route('admin.login') }}" class="admin-login-link" title="Admin Login">🔐</a>
+    <p>Email: wahyutegar506041@gmail.com</p>
+    <a href="{{ route('admin.login') }}" class="admin-login-link" title="Admin Login"><i class="bi bi-lock-fill"></i></a>
 </footer>
 
+</div>
+
+<div class="mobile-cta">
+    <a href="{{ route('biodata') }}" class="btn btn-mobile-cta btn-lg">
+        <svg class="paw-inline" viewBox="0 0 24 24">
+            <circle cx="6" cy="8" r="2.2"></circle>
+            <circle cx="10.8" cy="5.6" r="2.1"></circle>
+            <circle cx="15.8" cy="8" r="2.2"></circle>
+            <path d="M12 10.6c-3.4 0-5.9 2.4-5.9 4.9 0 2.2 1.8 3.9 4 3.9 1.4 0 1.9-.7 2-.7s.6.7 2 .7c2.2 0 4-1.7 4-3.9 0-2.6-2.6-4.9-6.1-4.9z"></path>
+        </svg>
+        Mulai Diagnosis
+    </a>
 </div>
 
 <script>
@@ -754,14 +870,22 @@ function scrollToSection(id){
         behavior:'smooth'
     });
 }
-
-const menuToggle = document.getElementById('menuToggle');
-const navMenu = document.getElementById('navMenu');
-if (menuToggle && navMenu) {
-    menuToggle.addEventListener('click', () => {
-        navMenu.classList.toggle('open');
-        menuToggle.textContent = navMenu.classList.contains('open') ? '✕' : '☰';
-    });
+</script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+const reveals = document.querySelectorAll('[data-aos]');
+if ('IntersectionObserver' in window) {
+    const observer = new IntersectionObserver((entries, obs) => {
+        entries.forEach(entry => {
+            if (entry.isIntersecting) {
+                entry.target.classList.add('aos-show');
+                obs.unobserve(entry.target);
+            }
+        });
+    }, { threshold: 0.12 });
+    reveals.forEach(el => observer.observe(el));
+} else {
+    reveals.forEach(el => el.classList.add('aos-show'));
 }
 </script>
 

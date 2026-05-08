@@ -4,23 +4,36 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Http;
+use Barryvdh\DomPDF\Facade\Pdf;
 use App\Models\Biodata;
 class DiagnosisController extends Controller
 {
     public function prosesDiagnosis(Request $request)
     {
-        $input = $request->input('gejala', []);
+        $rawInput = $request->input('gejala', []);
+        $input = $rawInput;
+        if (is_string($rawInput)) {
+            $decoded = json_decode($rawInput, true);
+            if (is_array($decoded)) {
+                $input = $decoded;
+            } else {
+                $input = array_filter(array_map('trim', explode(',', $rawInput)));
+            }
+        }
+        if (!is_array($input)) {
+            $input = [];
+        }
 
         // validasi minimal 3 gejala
         if (count($input) < 3) {
             return redirect()->route('gejala')
-                ->with('error', 'Pilih minimal 5 dan maksimal 7 gejala!');
+                ->with('error', 'Pilih minimal 3 gejala!');
         }
 
         $inputNama = $input;
 
         // ambil fitur dari Python
-        $response = Http::get('http://127.0.0.1:5000/gejala');
+        $response = Http::get(env('API_MODEL') . '/gejala');
 
         if (!$response->successful()) {
             return redirect()->route('gejala')
@@ -37,7 +50,7 @@ class DiagnosisController extends Controller
         }
 
         // kirim ke Python API
-        $response = Http::post('http://127.0.0.1:5000/predict', $fiturAssoc);
+        $response = Http::post(env('API_MODEL') . '/predict', $fiturAssoc);
 
         if (!$response->successful()) {
             return redirect()->route('gejala')
@@ -58,7 +71,8 @@ $biodataId = session('biodata_id');
 if ($biodataId) {
     \App\Models\Biodata::where('id', $biodataId)->update([
         'hasil_diagnosis' => $diagnosis['nama'],
-        'jenis' => $diagnosis['kategori']
+        'jenis' => $diagnosis['kategori'],
+        'gejala_dipilih' => json_encode(array_values($inputNama), JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES),
     ]);
 }
 
@@ -94,6 +108,25 @@ $biodataId = session('biodata_id');
             'diseaseDescription' => $description,
             'diagnosisHistory' => $history,
         ]);
+    }
+
+    public function downloadPdf()
+    {
+        $diagnosis = session('diagnosis', []);
+        $gejala = session('gejala', []);
+        $diseaseName = trim((string)($diagnosis['nama'] ?? ''));
+        $description = $this->getDiseaseDescription($diseaseName);
+        $generatedAt = now()->format('d M Y H:i');
+
+        $pdf = Pdf::loadView('pdf.hasil-diagnosis-pdf', [
+            'diagnosis' => $diagnosis,
+            'gejala' => is_array($gejala) ? $gejala : [],
+            'diseaseDescription' => $description,
+            'generatedAt' => $generatedAt,
+        ])->setPaper('a4', 'portrait');
+
+        $filename = 'hasil-diagnosis-pawmedic-' . now()->format('Ymd-His') . '.pdf';
+        return $pdf->download($filename);
     }
 
     public function simpanBiodata(Request $request)

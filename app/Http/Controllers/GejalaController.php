@@ -8,7 +8,7 @@ class GejalaController extends Controller
 {
     public function index()
     {
-        $response = Http::get('http://127.0.0.1:5000/gejala');
+        $response = Http::get(env('API_MODEL') . '/gejala');
         if (!$response->successful()) {
             return back()->with('error', 'Tidak bisa mengambil data gejala dari API');
         }

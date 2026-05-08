@@ -16,6 +16,9 @@ class Biodata extends Model
         'berat_badan',
         'ras_kucing',
         'alamat',
-        'no_telepon'
+        'no_telepon',
+        'hasil_diagnosis',
+        'jenis',
+        'gejala_dipilih',
     ];
 }
