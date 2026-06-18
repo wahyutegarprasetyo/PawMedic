@@ -11,7 +11,7 @@ app = Flask(__name__)
 model = joblib.load("../python_artifacts/model.joblib")
 
 # =========================
-# LOAD FEATURE
+# LOAD FEATURE/GEJALA
 # =========================
 with open("../python_artifacts/feature_cols.json") as f:
     feature_cols = json.load(f)
@@ -66,7 +66,7 @@ def predict():
     print("INPUT VECTOR:", input_data)
 
     input_df = pd.DataFrame([input_data], columns=feature_cols)
-
+#melakukan prediksi
     hasil = model.predict(input_df)[0]
     penyakit = str(hasil).lower().strip()
 
@@ -82,7 +82,7 @@ def predict():
             "pertolongan": [],
             "pencegahan": []
         })
-
+#mengembalikan hasil prediksi ke laravel
     return jsonify({
         "penyakit": hasil,
         "jenis": info["jenis"],

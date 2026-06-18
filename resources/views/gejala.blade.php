@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Pilih Gejala - PawMedic</title>
 <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700;800&family=Inter:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.0/font/bootstrap-icons.css">
 <link rel="icon" type="image/svg+xml" href="{{ asset('favicon.svg') }}">
 
@@ -205,7 +206,7 @@ body::after{
     animation:fadeUp 0.8s cubic-bezier(0.16, 1, 0.3, 1);
     border:1px solid rgba(111,207,151,0.2);
     position:relative;
-    overflow:hidden;
+    overflow:visible;
     transform-style:preserve-3d;
     transition:transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -237,6 +238,7 @@ body::after{
 }
 
 .form-card::after{
+    display:none;
     content:'';
     position:absolute;
     top:-50%;
@@ -378,6 +380,9 @@ body::after{
     position:relative;
     animation:fadeInUp 0.5s ease backwards;
 }
+.gejala-item:hover{
+    z-index:5;
+}
 
 .gejala-item:nth-child(1){animation-delay:0.05s;}
 .gejala-item:nth-child(2){animation-delay:0.1s;}
@@ -409,6 +414,7 @@ body::after{
 .gejala-label{
     display:flex;
     align-items:center;
+    flex-wrap:wrap;
     gap:14px;
     padding:20px 24px;
     background:linear-gradient(135deg, #ffffff 0%, #fafafa 100%);
@@ -421,40 +427,20 @@ body::after{
     color:var(--text-dark);
     user-select:none;
     position:relative;
-    overflow:hidden;
+    overflow:visible;
     box-shadow:
         0 4px 12px rgba(0,0,0,0.06),
         0 0 0 0 rgba(111,207,151,0);
     transform:perspective(1000px) rotateX(0deg);
 }
 
-.gejala-label::after{
-    content:'';
-    position:absolute;
-    top:50%;
-    left:50%;
-    width:0;
-    height:0;
-    border-radius:50%;
-    background:rgba(111,207,151,0.1);
-    transform:translate(-50%, -50%);
-    transition:width 0.6s ease, height 0.6s ease;
-}
-
-.gejala-label:hover::after{
-    width:300px;
-    height:300px;
-}
-
 .gejala-label:hover{
     background:linear-gradient(135deg, var(--primary-light) 0%, #ffffff 100%);
     border-color:var(--primary);
-    transform:translateY(-6px) scale(1.03) perspective(1000px) rotateX(-2deg);
+    transform:translateY(-3px);
     box-shadow:
-        0 12px 32px rgba(111,207,151,0.25),
-        0 0 0 4px rgba(111,207,151,0.1),
-        inset 0 1px 0 rgba(255,255,255,0.9);
-    border-width:3px;
+        0 10px 24px rgba(111,207,151,0.18),
+        0 0 0 4px rgba(111,207,151,0.08);
 }
 
 .gejala-checkbox:checked + .gejala-label{
@@ -466,23 +452,7 @@ body::after{
         0 12px 36px rgba(111,207,151,0.3),
         0 0 0 5px rgba(111,207,151,0.15),
         inset 0 2px 4px rgba(111,207,151,0.1);
-    transform:translateY(-4px) scale(1.02) perspective(1000px) rotateX(-1deg);
-    animation:selectedPulse 2s ease infinite;
-}
-
-@keyframes selectedPulse{
-    0%, 100%{
-        box-shadow:
-            0 12px 36px rgba(111,207,151,0.3),
-            0 0 0 5px rgba(111,207,151,0.15),
-            inset 0 2px 4px rgba(111,207,151,0.1);
-    }
-    50%{
-        box-shadow:
-            0 12px 36px rgba(111,207,151,0.35),
-            0 0 0 6px rgba(111,207,151,0.2),
-            inset 0 2px 4px rgba(111,207,151,0.15);
-    }
+    transform:translateY(-2px);
 }
 
 .gejala-checkbox:checked + .gejala-label::before{
@@ -525,6 +495,156 @@ body::after{
     background:white;
     position:relative;
     z-index:1;
+}
+
+.gejala-name{
+    position:relative;
+    z-index:2;
+    flex:1;
+    min-width:0;
+}
+
+.gejala-help{
+    position:relative;
+    z-index:3;
+    width:28px;
+    height:28px;
+    border-radius:999px;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color:var(--primary-dark);
+    background:#ecfdf5;
+    border:1px solid #bbf7d0;
+    flex-shrink:0;
+}
+
+.gejala-help i{
+    transition:transform 0.2s ease;
+}
+
+.gejala-item.show-info .gejala-help i{
+    transform:rotate(180deg);
+}
+
+.gejala-description{
+    display:none;
+    width:100%;
+    margin-top:2px;
+    margin-left:42px;
+    padding:12px 14px;
+    border-radius:12px;
+    background:#f0fdf4;
+    border:1px solid #bbf7d0;
+    color:#14532d;
+    font-size:13px;
+    line-height:1.55;
+    font-weight:500;
+}
+.gejala-item.show-info .gejala-description{
+    display:block;
+}
+
+.diagnosis-alert{
+    display:none;
+    position:fixed;
+    left:50%;
+    top:50%;
+    z-index:9999;
+    width:min(420px, calc(100vw - 28px));
+    margin:0;
+    padding:16px 44px 16px 16px;
+    border:1px solid #fde68a;
+    border-radius:14px;
+    background:#ffffff;
+    color:#1f2937;
+    box-shadow:0 22px 55px rgba(15,23,42,0.26);
+    transform:translate(-50%, -46%) scale(.96);
+    opacity:0;
+    transition:opacity .2s ease, transform .2s ease;
+}
+
+.diagnosis-alert.show{
+    display:flex;
+    align-items:flex-start;
+    gap:12px;
+    opacity:1;
+    transform:translate(-50%, -50%) scale(1);
+}
+
+.diagnosis-alert-icon{
+    flex:0 0 auto;
+    width:36px;
+    height:36px;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color:#b45309;
+    background:#fef3c7;
+    font-size:18px;
+}
+
+.diagnosis-alert-content{
+    min-width:0;
+}
+
+.diagnosis-alert-heading{
+    display:block;
+    margin:0 0 2px;
+    color:#114d3a;
+    font-size:14px;
+    font-weight:800;
+    line-height:1.35;
+}
+
+.diagnosis-alert-message{
+    margin:0;
+    color:#475569;
+    font-size:14px;
+    font-weight:600;
+    line-height:1.45;
+}
+
+.diagnosis-alert-close{
+    position:absolute;
+    top:12px;
+    right:10px;
+    width:28px;
+    height:28px;
+    border:0;
+    border-radius:50%;
+    display:inline-flex;
+    align-items:center;
+    justify-content:center;
+    color:#64748b;
+    background:transparent;
+    cursor:pointer;
+    transition:background .2s ease, color .2s ease;
+}
+
+.diagnosis-alert-close:hover{
+    color:#0f172a;
+    background:#f1f5f9;
+}
+
+@media (max-width:480px){
+    .diagnosis-alert{
+        width:calc(100vw - 24px);
+        padding:14px 40px 14px 14px;
+        border-radius:12px;
+    }
+
+    .diagnosis-alert-icon{
+        width:32px;
+        height:32px;
+        font-size:16px;
+    }
+
+    .diagnosis-alert-heading,
+    .diagnosis-alert-message{
+        font-size:13px;
+    }
 }
 
 .selected-count{
@@ -826,6 +946,65 @@ body::after{
                     <button type="button" id="clearSearch" class="clear-search" style="display:none;">✕</button>
                 </div>
                 
+                @php
+                    $explainGejala = function ($name) {
+                        $text = trim((string) $name);
+                        $lower = \Illuminate\Support\Str::lower($text);
+                        $rules = [
+                            'demam tinggi' => 'Telinga, telapak kaki, atau tubuh kucing terasa lebih panas dari biasanya dan kucing tampak kurang aktif.',
+                            'sulit kencing' => 'Cek litterbox/kotak pasir kucing, lihat apakah kencingnya sedikit atau normal ke banyak.',
+                            'kencing' => 'Amati frekuensi, jumlah, warna, dan apakah kucing tampak mengejan saat menggunakan kotak pasir.',
+                            'diare berdarah' => 'Periksa apakah feses encer bercampur darah. Jika terlihat darah, kondisi ini perlu lebih diwaspadai.',
+                            'diare' => 'Periksa apakah feses lebih encer dari biasanya, lebih sering keluar, atau baunya lebih menyengat.',
+                            'muntah' => 'Catat seberapa sering kucing muntah, isi muntahan, dan apakah terjadi setelah makan atau minum.',
+                            'nafsu makan' => 'Bandingkan porsi makan hari ini dengan kebiasaan normalnya dan perhatikan apakah kucing menolak makanan favorit.',
+                            'kelemahan' => 'Perhatikan apakah kucing tampak lemas, lebih banyak diam, sulit berdiri, atau tidak mau bermain.',
+                            'lemas' => 'Perhatikan apakah kucing lebih banyak tidur, kurang responsif, atau enggan bermain dan bergerak.',
+                            'bersin' => 'Amati apakah bersin disertai lendir hidung, mata berair, atau napas berbunyi.',
+                            'flu' => 'Perhatikan apakah hidung berair, bersin, atau kucing terlihat sulit mencium makanan.',
+                            'pilek' => 'Cek apakah ada cairan dari hidung, hidung tersumbat, atau suara napas menjadi berbeda.',
+                            'sesak napas' => 'Lihat apakah napas kucing cepat, berat, mulut terbuka, atau dada terlihat naik turun kuat.',
+                            'batuk' => 'Dengarkan apakah batuk kering atau berdahak, serta apakah muncul setelah aktivitas atau saat istirahat.',
+                            'radang telinga' => 'Cek apakah telinga kemerahan, kotor, berbau, atau kucing sering menggaruk telinga.',
+                            'otitis' => 'Perhatikan apakah kucing sering menggelengkan kepala, telinga berbau, atau ada kotoran berlebih.',
+                            'gatal' => 'Cek area kulit yang sering digaruk, dijilat, atau digigit, terutama telinga, leher, punggung, dan ekor.',
+                            'kutu' => 'Sisir atau buka bulu kucing dan lihat apakah ada kutu kecil bergerak atau bintik hitam seperti kotoran.',
+                            'pinjal' => 'Periksa pangkal ekor, leher, dan perut untuk melihat kutu kecil atau bekas gigitan.',
+                            'kebotakan' => 'Lihat apakah ada area bulu yang menipis atau botak, terutama jika sering digaruk atau dijilat.',
+                            'rontok' => 'Perhatikan apakah bulu rontok lebih banyak dari biasanya atau menyisakan area kulit terlihat.',
+                            'bulu' => 'Lihat apakah bulu rontok berlebihan, kusam, menggumpal, atau ada area botak.',
+                            'gangguan mata' => 'Periksa apakah mata merah, berair, belekan, bengkak, atau kucing sering menyipitkan mata.',
+                            'mata' => 'Perhatikan apakah mata terlihat keruh, merah, berair, atau ada kotoran yang tidak biasa.',
+                            'telinga' => 'Cek apakah telinga kotor, berbau, sering digaruk, atau kepala sering digelengkan.',
+                            'demam' => 'Rasakan telinga/telapak kaki yang lebih hangat dari biasa dan perhatikan apakah kucing tampak lesu.',
+                            'luka pada mulut' => 'Lihat area gusi, lidah, atau bibir. Perhatikan apakah ada sariawan, luka, bau mulut, atau sulit makan.',
+                            'luka garukan' => 'Cek bekas garukan, kemerahan, atau kerak di kulit akibat kucing sering menggaruk.',
+                            'luka' => 'Periksa lokasi luka, kemerahan, bengkak, nanah, atau apakah kucing kesakitan saat disentuh.',
+                            'pincang' => 'Amati cara berjalan kucing, apakah salah satu kaki diangkat, diseret, atau tidak kuat menapak.',
+                            'selaput lendir kuning' => 'Cek gusi, bagian putih mata, atau telinga bagian dalam. Warna kuning bisa menandakan masalah serius.',
+                            'jaundice' => 'Perhatikan warna kuning pada gusi, mata, atau kulit tipis seperti telinga.',
+                            'perut membesar' => 'Lihat apakah perut tampak membesar tidak biasa, terasa tegang, atau kucing tidak nyaman saat disentuh.',
+                            'buncit' => 'Bandingkan bentuk perut dengan biasanya, terutama jika disertai lemas atau nafsu makan turun.',
+                            'anemia' => 'Cek warna gusi. Gusi yang tampak pucat bisa menjadi tanda darah atau stamina kucing sedang bermasalah.',
+                            'infeksi kulit' => 'Periksa kulit yang merah, basah, berkerak, bernanah, atau berbau tidak biasa.',
+                            'overgrooming' => 'Perhatikan apakah kucing menjilat satu area terus-menerus sampai bulu menipis atau kulit iritasi.',
+                            'perut bawah keras' => 'Raba pelan area perut bawah. Jika terasa keras dan kucing kesakitan, catat sebagai gejala penting.',
+                            'sakit perut' => 'Perhatikan apakah kucing menghindar saat perut disentuh, meringkuk, atau tampak tidak nyaman.',
+                            'nyeri abdomen' => 'Amati tanda nyeri di perut seperti mengeong saat disentuh, gelisah, atau posisi tubuh membungkuk.',
+                            'penurunan berat badan cepat' => 'Bandingkan berat atau bentuk tubuh dalam beberapa hari/minggu terakhir, terutama jika makan tetap normal.',
+                            'berat' => 'Bandingkan berat badan dengan kondisi sebelumnya dan amati apakah tubuh tampak lebih kurus atau membesar.',
+                        ];
+
+                        foreach ($rules as $keyword => $description) {
+                            if (\Illuminate\Support\Str::contains($lower, $keyword)) {
+                                return $description;
+                            }
+                        }
+
+                        return 'Perhatikan gejala ' . $text . ' dengan melihat kapan mulai muncul, seberapa sering terjadi, dan apakah membuat kucing berubah perilaku.';
+                    };
+                @endphp
+
                 <div class="gejala-grid" id="gejalaGrid">
     @foreach($gejala as $item)
         <div class="gejala-item">
@@ -837,7 +1016,11 @@ body::after{
                 id="gejala_{{ $loop->index }}"
             >
             <label for="gejala_{{ $loop->index }}" class="gejala-label">
-                {{ $item }}
+                <span class="gejala-name">{{ $item }}</span>
+                <span class="gejala-help" role="button" tabindex="0" aria-label="Tampilkan penjelasan gejala {{ $item }}" aria-expanded="false">
+                    <i class="bi bi-chevron-down"></i>
+                </span>
+                <span class="gejala-description">{{ $explainGejala($item) }}</span>
             </label>
         </div>
     @endforeach
@@ -858,6 +1041,19 @@ body::after{
     </div>
 </div>
 
+<div class="alert alert-warning diagnosis-alert" id="diagnosisAlert" role="alert" aria-live="assertive">
+    <span class="diagnosis-alert-icon" aria-hidden="true">
+        <i class="bi bi-exclamation-triangle-fill"></i>
+    </span>
+    <div class="diagnosis-alert-content">
+        <strong class="diagnosis-alert-heading">Perhatian</strong>
+        <p class="diagnosis-alert-message" id="diagnosisAlertText">Pilih minimal 4 gejala terlebih dahulu.</p>
+    </div>
+    <button type="button" class="diagnosis-alert-close" aria-label="Tutup alert" id="closeDiagnosisAlert">
+        <i class="bi bi-x-lg"></i>
+    </button>
+</div>
+
 @include('components.toast')
 @include('components.scroll-top')
 
@@ -866,6 +1062,24 @@ const checkboxes = document.querySelectorAll('.gejala-checkbox');
 const submitBtn = document.getElementById('submitBtn');
 const selectedCount = document.getElementById('selectedCount');
 const form = document.getElementById('gejalaForm');
+const diagnosisAlert = document.getElementById('diagnosisAlert');
+const diagnosisAlertText = document.getElementById('diagnosisAlertText');
+const closeDiagnosisAlert = document.getElementById('closeDiagnosisAlert');
+let diagnosisAlertTimer = null;
+
+function showDiagnosisAlert(message) {
+    diagnosisAlertText.textContent = message;
+    diagnosisAlert.classList.add('show');
+    clearTimeout(diagnosisAlertTimer);
+    diagnosisAlertTimer = setTimeout(hideDiagnosisAlert, 3000);
+}
+
+function hideDiagnosisAlert() {
+    clearTimeout(diagnosisAlertTimer);
+    diagnosisAlert.classList.remove('show');
+}
+
+closeDiagnosisAlert.addEventListener('click', hideDiagnosisAlert);
 
 function updateSelectedCount() {
     const checked = document.querySelectorAll('.gejala-checkbox:checked').length;
@@ -875,19 +1089,36 @@ function updateSelectedCount() {
     selectedCount.classList.add('animate');
     setTimeout(() => selectedCount.classList.remove('animate'), 500);
     
-    // Enable/disable submit button
+    // Tombol tetap bisa diklik agar validasi menampilkan alert yang jelas.
     if (checked >= 4 && checked <= 7) {
-        submitBtn.disabled = false;
         submitBtn.style.opacity = '1';
+        submitBtn.setAttribute('aria-disabled', 'false');
     } else {
-        submitBtn.disabled = true;
         submitBtn.style.opacity = '0.6';
+        submitBtn.setAttribute('aria-disabled', 'true');
     }
 }
 
 // Add event listeners
 checkboxes.forEach(checkbox => {
     checkbox.addEventListener('change', updateSelectedCount);
+});
+
+document.querySelectorAll('.gejala-help').forEach((help) => {
+    const item = help.closest('.gejala-item');
+    const toggleInfo = (event) => {
+        event.preventDefault();
+        event.stopPropagation();
+        const isOpen = item.classList.toggle('show-info');
+        help.setAttribute('aria-expanded', isOpen ? 'true' : 'false');
+    };
+
+    help.addEventListener('click', toggleInfo);
+    help.addEventListener('keydown', (event) => {
+        if (event.key === 'Enter' || event.key === ' ') {
+            toggleInfo(event);
+        }
+    });
 });
 
 // Form submission
@@ -898,14 +1129,16 @@ form.addEventListener('submit', function(e) {
     const checked = document.querySelectorAll('.gejala-checkbox:checked');
 
     if (checked.length < 4) {
-        alert("Minimal pilih 4 gejala!");
+        showDiagnosisAlert("Minimal pilih 4 gejala sebelum melanjutkan diagnosis.");
         return;
     }
 
     if (checked.length > 7) {
-        alert("Maksimal hanya 7 gejala!");
+        showDiagnosisAlert("Maksimal hanya 7 gejala yang dapat dipilih.");
         return;
     }
+
+    hideDiagnosisAlert();
 
      // ambil gejala
      let gejala = [];

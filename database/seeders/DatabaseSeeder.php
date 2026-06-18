@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\User;
 use Illuminate\Database\Console\Seeds\WithoutModelEvents;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class DatabaseSeeder extends Seeder
 {
@@ -16,12 +17,16 @@ class DatabaseSeeder extends Seeder
     public function run(): void
     {
         // Create Admin User
-        User::create([
-            'name' => 'Admin PawMedic',
-            'email' => 'admin@pawmedic.app',
-            'password' => \Illuminate\Support\Facades\Hash::make('admin123'),
-            'email_verified_at' => now(),
-        ]);
+        User::query()->updateOrCreate(
+            ['email' => 'admin@pawmedic.app'],
+            [
+                'name' => 'Admin PawMedic',
+                'password' => Hash::make('admin123'),
+                'email_verified_at' => now(),
+            ]
+        );
+
+        $this->call(BiodataTrendSeeder::class);
 
         // Optional: Create test user
         // User::factory()->create([

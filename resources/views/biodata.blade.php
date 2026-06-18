@@ -159,6 +159,71 @@ body{
     font-size:13px;
 }
 
+.combo-wrap{
+    position:relative;
+}
+.combo-input-wrap{
+    position:relative;
+}
+.combo-input-wrap input{
+    padding-right:46px;
+}
+.combo-toggle{
+    position:absolute;
+    right:14px;
+    top:50%;
+    transform:translateY(-50%);
+    border:none;
+    background:transparent;
+    color:#334155;
+    width:28px;
+    height:28px;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    cursor:pointer;
+    font-size:14px;
+}
+.combo-menu{
+    display:none;
+    position:absolute;
+    left:0;
+    right:0;
+    top:calc(100% + 8px);
+    z-index:20;
+    max-height:240px;
+    overflow:auto;
+    padding:8px;
+    border:1px solid #dbe6ef;
+    border-radius:14px;
+    background:#fff;
+    box-shadow:0 18px 44px rgba(15,23,42,0.16);
+}
+.combo-wrap.open .combo-menu{
+    display:block;
+}
+.combo-option{
+    width:100%;
+    border:none;
+    background:transparent;
+    color:var(--text-dark);
+    padding:11px 12px;
+    border-radius:10px;
+    text-align:left;
+    font:600 14px var(--ff-body);
+    cursor:pointer;
+}
+.combo-option:hover,
+.combo-option.active{
+    background:var(--primary-light);
+    color:var(--primary-dark);
+}
+.combo-empty{
+    padding:12px;
+    color:var(--text-muted);
+    font-size:14px;
+}
+
 .form-row{
     display:grid;
     grid-template-columns:1fr 1fr;
@@ -343,7 +408,7 @@ body{
 
     <!-- FORM CARD -->
     <div class="form-card">
-    <form action="{{ route('biodata.simpan') }}" method="POST">
+    <form id="biodataForm" action="{{ route('biodata.simpan') }}" method="POST">
             @csrf
             
             <!-- Nama Pemilik -->
@@ -441,15 +506,26 @@ body{
             <!-- Alamat -->
             <div class="form-group">
                 <label for="alamat">
-                    Alamat
+                    Alamat Kecamatan <span class="required">*</span>
                 </label>
-                <textarea 
-                    id="alamat" 
-                    name="alamat" 
-                    placeholder="Masukkan alamat (opsional)"
-                    rows="3"
-                ></textarea>
-                <small>Opsional - Untuk keperluan dokumentasi</small>
+                <div class="combo-wrap" id="alamatCombo">
+                    <div class="combo-input-wrap">
+                        <input
+                            type="text"
+                            id="alamat"
+                            name="alamat"
+                            placeholder="Pilih atau cari kecamatan di Jember"
+                            required
+                            autocomplete="off"
+                            role="combobox"
+                            aria-expanded="false"
+                            aria-controls="alamatOptions"
+                        >
+                        <button type="button" class="combo-toggle" id="alamatToggle" aria-label="Tampilkan pilihan kecamatan">▼</button>
+                    </div>
+                    <div class="combo-menu" id="alamatOptions" role="listbox"></div>
+                </div>
+                <small>Wajib memilih kecamatan dalam lingkup Kabupaten Jember.</small>
             </div>
 
             <!-- Nomor Telepon -->
@@ -482,45 +558,103 @@ body{
 </div>
 
 <script>
-    
-    // Validasi sederhana
-    const namaPemilik = document.getElementById('nama_pemilik').value.trim();
-    const namaKucing = document.getElementById('nama_kucing').value.trim();
-    const umurKucing = document.getElementById('umur_kucing').value;
-    const jenisKelamin = document.getElementById('jenis_kelamin').value;
-    const beratBadan = document.getElementById('berat_badan').value;
-    
-    if (!namaPemilik || !namaKucing || !umurKucing || !jenisKelamin || !beratBadan) {
-        alert('Mohon lengkapi semua field yang wajib diisi!');
+const kecamatanJember = [
+    'Ajung', 'Ambulu', 'Arjasa', 'Balung', 'Bangsalsari', 'Gumukmas', 'Jelbuk',
+    'Jenggawah', 'Jombang', 'Kalisat', 'Kaliwates', 'Kencong', 'Ledokombo',
+    'Mayang', 'Mumbulsari', 'Pakusari', 'Panti', 'Patrang', 'Puger',
+    'Rambipuji', 'Semboro', 'Silo', 'Sukorambi', 'Sukowono', 'Sumberbaru',
+    'Sumberjambe', 'Sumbersari', 'Tanggul', 'Tempurejo', 'Umbulsari', 'Wuluhan'
+];
+
+const biodataForm = document.getElementById('biodataForm');
+const alamatInput = document.getElementById('alamat');
+const alamatCombo = document.getElementById('alamatCombo');
+const alamatOptions = document.getElementById('alamatOptions');
+const alamatToggle = document.getElementById('alamatToggle');
+
+function normalizeText(value) {
+    return String(value || '').trim().toLowerCase();
+}
+
+function openAlamatOptions() {
+    alamatCombo.classList.add('open');
+    alamatInput.setAttribute('aria-expanded', 'true');
+}
+
+function closeAlamatOptions() {
+    alamatCombo.classList.remove('open');
+    alamatInput.setAttribute('aria-expanded', 'false');
+}
+
+function renderAlamatOptions(query = '') {
+    const q = normalizeText(query);
+    const filtered = kecamatanJember.filter((item) => normalizeText(item).includes(q));
+
+    if (filtered.length === 0) {
+        alamatOptions.innerHTML = '<div class="combo-empty">Kecamatan tidak ditemukan</div>';
         return;
     }
-    
-    // Simpan data ke sessionStorage untuk sementara
+
+    alamatOptions.innerHTML = filtered.map((item) => (
+        `<button type="button" class="combo-option" role="option" data-value="${item}">${item}</button>`
+    )).join('');
+}
+
+renderAlamatOptions();
+
+alamatInput.addEventListener('input', () => {
+    const selected = kecamatanJember.some((item) => normalizeText(item) === normalizeText(alamatInput.value));
+    alamatInput.setCustomValidity(selected || alamatInput.value.trim() === '' ? '' : 'Pilih kecamatan yang tersedia di Kabupaten Jember.');
+    renderAlamatOptions(alamatInput.value);
+    openAlamatOptions();
+});
+
+alamatInput.addEventListener('focus', () => {
+    renderAlamatOptions(alamatInput.value);
+    openAlamatOptions();
+});
+
+alamatToggle.addEventListener('click', () => {
+    renderAlamatOptions(alamatInput.value);
+    alamatCombo.classList.contains('open') ? closeAlamatOptions() : openAlamatOptions();
+    alamatInput.focus();
+});
+
+alamatOptions.addEventListener('click', (event) => {
+    const option = event.target.closest('.combo-option');
+    if (!option) return;
+    alamatInput.value = option.dataset.value;
+    alamatInput.setCustomValidity('');
+    closeAlamatOptions();
+});
+
+document.addEventListener('click', (event) => {
+    if (!alamatCombo.contains(event.target)) {
+        closeAlamatOptions();
+    }
+});
+
+biodataForm.addEventListener('submit', function(e) {
+    const selected = kecamatanJember.some((item) => normalizeText(item) === normalizeText(alamatInput.value));
+    if (!selected) {
+        e.preventDefault();
+        alamatInput.setCustomValidity('Pilih kecamatan yang tersedia di Kabupaten Jember.');
+        alamatInput.reportValidity();
+        return;
+    }
+
     const formData = {
-        nama_pemilik: namaPemilik,
-        nama_kucing: namaKucing,
-        umur_kucing: umurKucing,
-        jenis_kelamin: jenisKelamin,
+        nama_pemilik: document.getElementById('nama_pemilik').value.trim(),
+        nama_kucing: document.getElementById('nama_kucing').value.trim(),
+        umur_kucing: document.getElementById('umur_kucing').value,
+        jenis_kelamin: document.getElementById('jenis_kelamin').value,
         ras_kucing: document.getElementById('ras_kucing').value.trim(),
-        berat_badan: beratBadan,
-        alamat: document.getElementById('alamat').value.trim(),
+        berat_badan: document.getElementById('berat_badan').value,
+        alamat: alamatInput.value.trim(),
         no_telepon: document.getElementById('no_telepon').value.trim()
     };
-    
+
     sessionStorage.setItem('biodata_kucing', JSON.stringify(formData));
-    
-    // Simpan data ke sessionStorage
-    sessionStorage.setItem('biodata_kucing', JSON.stringify(formData));
-    
-    // Show success message
-    if (window.showToast) {
-        showToast('Biodata berhasil disimpan!', 'success', 'Berhasil');
-    }
-    
-    // Redirect ke halaman pilih gejala
-    setTimeout(() => {
-        window.location.href = '{{ route("gejala") }}';
-    }, 500);
 });
 </script>
 

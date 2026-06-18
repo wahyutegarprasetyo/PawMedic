@@ -5,7 +5,7 @@ use App\Http\Controllers\DiagnosisController;
 use App\Http\Controllers\AdminController;
 use App\Http\Controllers\GejalaController;
 use App\Http\Controllers\UlasanController;
-use App\Models\Ulasan;
+use App\Http\Controllers\LandingController;
 
 Route::get('/admin/sort-diagnosis', [AdminController::class, 'sortDiagnosis']);
 Route::get('/admin/export-diagnosis', [AdminController::class, 'exportDiagnosisExcel'])
@@ -55,10 +55,7 @@ Route::post('/admin/ulasan/{id}/toggle-hide', [UlasanController::class, 'toggleH
     ->name('ulasan.toggleHide')
     ->middleware('auth');
 
-Route::get('/', function () {
-    $ulasan = Ulasan::where('is_hidden', false)->latest()->take(3)->get();
-    return view('landing', compact('ulasan'));
-});
+Route::get('/', [LandingController::class, 'index'])->name('landing');
 
 Route::get('/biodata', function () {
     return view('biodata');

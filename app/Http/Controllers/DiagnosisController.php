@@ -76,10 +76,12 @@ if ($biodataId) {
     ]);
 }
 
-return redirect()->route('hasil-diagnosis')
-->with('diagnosis', $diagnosis)
-->with('gejala', $inputNama);
-$biodataId = session('biodata_id');
+session([
+    'diagnosis' => $diagnosis,
+    'gejala' => $inputNama,
+]);
+
+return redirect()->route('hasil-diagnosis');
     }
 
     // 🔥 halaman hasil
@@ -137,6 +139,7 @@ $biodataId = session('biodata_id');
             'umur_kucing' => 'required|numeric',
             'jenis_kelamin' => 'required',
             'berat_badan' => 'required|numeric',
+            'alamat' => 'required|in:Ajung,Ambulu,Arjasa,Balung,Bangsalsari,Gumukmas,Jelbuk,Jenggawah,Jombang,Kalisat,Kaliwates,Kencong,Ledokombo,Mayang,Mumbulsari,Pakusari,Panti,Patrang,Puger,Rambipuji,Semboro,Silo,Sukorambi,Sukowono,Sumberbaru,Sumberjambe,Sumbersari,Tanggul,Tempurejo,Umbulsari,Wuluhan',
         ]);
     
         $data = \App\Models\Biodata::create([
